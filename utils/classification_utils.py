@@ -5,6 +5,8 @@ import time, json, re, os, sys
 import pandas as pd
 from itertools import groupby
 from collections import Counter
+url_noise_words=["archive", "archives", "forms", "shop", "eshop", "docs", "webmail", "outlook", "mail", "library", "portal", 
+"intranet", "login", "alumni", "booking", "bookings"]
 noise_words=["www",'download','online','click','homepage',
   "http","email","https","com","net","upload","uploads","login","site",
              "website","browse","wordpress","text","html","navigation","coming","soon","please"]
@@ -120,6 +122,7 @@ def cos_sim(vector1,vector2):
 def create_cat_vector(input_keyword_dict,wv_model):
   tmp_category_vector_dict={}
   for key,words in input_keyword_dict.items():
+    if len(words)==0: continue
     #words=re.findall("\w+",val)
     #print(words) 
     cur_vec,_=get_words_vector(words,wv_model)
@@ -177,6 +180,7 @@ class cat_struct: #processing the category structure excel file
     self.child_dict={}
     self.data_dict={}
     self.icon_dict={}
+    self.cat_domains_dict={} #domains at which this category applies
     self.description_dict={}
     self.parent_list=[]
     parent_child_list=[]
@@ -191,9 +195,6 @@ class cat_struct: #processing the category structure excel file
       self.parent_list.append((parent_name,norm(parent_name)))
       self.icon_dict[norm(parent_name)]=icon
       self.description_dict[norm(parent_name)]=description
-    self.data_dict["parent_list"]=self.parent_list
-    self.data_dict["icon_dict"]=self.icon_dict
-    self.data_dict["description_dict"]=self.description_dict
     #now processing the categories sheet
     for row in categories_sheet.iterrows():
       cur_obj={}
@@ -205,10 +206,20 @@ class cat_struct: #processing the category structure excel file
       alias1=row_dict["Alias1"]
       parent2=row_dict["Parent2"]
       alias2=row_dict["Alias2"]
-      parent3=row_dict["Parent3"]
-      alias3=row_dict["Alias3"]
+      parent3=row_dict.get("Parent3","")
+      alias3=row_dict.get("Alias3","")
+      cat_description=row_dict.get("Description","")
+      cat_icon=row_dict.get("Icon","")
+      cat_domains_str=row_dict.get("Domains","") #whether to keep .com/.gov
+      cat_domains=re.findall("\w+",cat_domains_str.lower())
+      
+
+
       norm_cat,norm_parent1,norm_parent2,norm_parent3=norm(cat_name),norm(parent1),norm(parent2),norm(parent3)
       self.id_dict[norm_cat],self.id_dict[norm_parent1],self.id_dict[norm_parent2],self.id_dict[norm_parent3]=cat_name,parent1,parent2,parent3
+      self.description_dict[norm_cat]=cat_description
+      self.icon_dict[norm_cat]=cat_icon
+      self.cat_domains_dict[norm_cat]=cat_domains
       #print(cat_name, "=", keywords)
       if norm_parent1: 
         if alias1: cur_alias1=alias1
@@ -224,11 +235,17 @@ class cat_struct: #processing the category structure excel file
         parent_child_list.append((norm_parent1,(norm_cat,cur_alias3)))
 
       self.keyword_dict[norm_cat]=re.findall("\w+",keywords.lower())
+
     parent_child_list.sort()
     grouped=[(key,[v[1] for v in group]) for key,group in groupby(parent_child_list,lambda x:x[0])]
     self.child_dict=dict(iter(grouped))
     for k,v in self.child_dict.items():
       self.child_dict[k]=list(set(v))
+
+    self.data_dict["parent_list"]=self.parent_list
+    self.data_dict["icon_dict"]=self.icon_dict
+    self.data_dict["description_dict"]=self.description_dict
+    self.data_dict["cat_domains_dict"]=self.cat_domains_dict
 
     self.data_dict["id_dict"]=self.id_dict
     self.data_dict["child_dict"]=self.child_dict
@@ -317,13 +334,42 @@ if __name__=="__main__":
   xl_fname='290721.xlsx'
   cached_fpath="crawl/aug21/cached_all.txt"
   classified_fpath="crawl/aug21/classified_all5.txt"
-  if len(sys.argv)>1:
-    xl_fname=sys.argv[1]
-    cached_fpath=sys.argv[2]
-    classified_fpath=sys.argv[3]
-  print("xl_fname",xl_fname)
+  crawl_dir="crawl"
+  run_dir="oct21_au"
+  cached_fname="cached_all.txt"
+  classified_fname="classified_all.txt"
+  xls_fpath="14october21.xlsx"
+  cat_json_fpath="data_dict_new.json"
+
+  if len(sys.argv)>1: crawl_dir=sys.argv[1]
+  if len(sys.argv)>2: run_dir=sys.argv[2]  
+  if len(sys.argv)>3: cached_fname=sys.argv[3]  
+  if len(sys.argv)>4: classified_fname=sys.argv[4] 
+  if len(sys.argv)>5: cat_json_fpath=sys.argv[5]   
+  # if len(sys.argv)>5: xls_fpath=sys.argv[5] 
+  # if len(sys.argv)>6: cat_json_fpath=sys.argv[6] 
+
+  cached_fpath=os.path.join(crawl_dir,run_dir,cached_fname)
+  classified_fpath=os.path.join(crawl_dir,run_dir,classified_fname)
+  #print("xl_fname",xl_fname)
+  print("cat_json_fpath",cat_json_fpath)
   print("cached_fpath",cached_fpath)
   print("classified_fpath",classified_fpath)
+
+  json_fopen=open(cat_json_fpath)
+  cat_struct_obj=json.load(json_fopen)
+  json_fopen.close()
+  cur_keyword_dict=cat_struct_obj["keyword_dict"]
+  cat_domains_dict=cat_struct_obj["cat_domains_dict"]
+  # for a,b in cat_domains_dict.items():
+  #   print(a,b)
+  #sys.exit()
+
+  # cat_struct_obj=cat_struct(xls_fpath)
+  
+  # cat_struct_obj.save(cat_json_fpath)
+  print("loaded categorization structure, converted to dictionary")
+
   #sys.exit()
   #print("Hello!")
   t0=time.time()
@@ -331,16 +377,12 @@ if __name__=="__main__":
   #cur_wv_model=api.load('word2vec-google-news-300', return_path=True)
   cur_wv_model= api.load("word2vec-google-news-300")
   t1=time.time()
-  print("loaded model",t1-t0)
+  print("loaded WV model",t1-t0)
   t0=time.time()
-  
-  cat_struct_obj=cat_struct(xl_fname)
-  cur_keyword_dict=cat_struct_obj.keyword_dict
   cur_cat_vector=create_cat_vector(cur_keyword_dict,cur_wv_model)  
-  # t0=time.time()
-  # cur_cat_vector=create_cat_vector(kw_dict0,cur_wv_model)
-  # t1=time.time()
-  print("loaded classification structure",t1-t0)
+  print("loaded categorization vector",t1-t0)
+  
+
 
   t0=time.time()
   
