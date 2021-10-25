@@ -18,7 +18,7 @@ def get_line(line_i0,fpath0,line_size=100): #from a file with fixed line size
   fopen0.close()
   return cur_line
 
-def get_multiple_lines(line_i0,n_lines,fpath0,line_size=100):
+def get_multiple_lines(line_i0,n_lines,fpath0,line_size=100): #get n lines starting line #
   line_list=[]
   fopen0=open(fpath0)
   fopen0.seek(line_i0*line_size)
@@ -28,7 +28,7 @@ def get_multiple_lines(line_i0,n_lines,fpath0,line_size=100):
   fopen0.close()
   return line_list
 
-def get_n_lines(fpath0,line_size=100): #get number of lines of a file with fixed line size
+def get_file_n_lines(fpath0,line_size=100): #get number of lines of a file with fixed line size
   file_size=os.path.getsize(fpath0)
   return int(file_size/line_size)
 
