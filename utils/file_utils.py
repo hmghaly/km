@@ -12,6 +12,7 @@ def remove_line(str0,fpath0): #remove a line that starts with certin str
   write_fopen.close()
 
 def get_line(line_i0,fpath0,line_size=100): #from a file with fixed line size
+  if not os.path.exists(fpath0): return ""
   fopen0=open(fpath0)
   fopen0.seek(line_i0*line_size)
   cur_line=fopen0.readline().strip()
@@ -19,6 +20,7 @@ def get_line(line_i0,fpath0,line_size=100): #from a file with fixed line size
   return cur_line
 
 def get_multiple_lines(line_i0,n_lines,fpath0,line_size=100): #get n lines starting line #
+  if not os.path.exists(fpath0): return []
   line_list=[]
   fopen0=open(fpath0)
   fopen0.seek(line_i0*line_size)
@@ -29,6 +31,7 @@ def get_multiple_lines(line_i0,n_lines,fpath0,line_size=100): #get n lines start
   return line_list
 
 def get_file_n_lines(fpath0,line_size=100): #get number of lines of a file with fixed line size
+  if not os.path.exists(fpath0): return 0
   file_size=os.path.getsize(fpath0)
   return int(file_size/line_size)
 
