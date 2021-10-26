@@ -242,6 +242,17 @@ class cat_struct: #processing the category structure excel file
     for k,v in self.child_dict.items():
       self.child_dict[k]=list(set(v))
 
+    def get_children(child_dict0,cat_id0,level=0):
+      for child in child_dict0.get(cat_id0,[]): #node['children']:
+        yield child
+        if cat_id0==child[0]: continue
+        for grandchild in get_children(child_dict0,child[0],level+1):
+          yield grandchild
+    self.recursive_child_dict={}
+    for key in self.child_dict:
+      grand_children=list(get_children(self.child_dict,key))
+      self.recursive_child_dict[key]=grand_children
+
     self.data_dict["parent_list"]=self.parent_list
     self.data_dict["icon_dict"]=self.icon_dict
     self.data_dict["description_dict"]=self.description_dict
@@ -249,6 +260,7 @@ class cat_struct: #processing the category structure excel file
 
     self.data_dict["id_dict"]=self.id_dict
     self.data_dict["child_dict"]=self.child_dict
+    self.data_dict["recursive_child_dict"]=self.recursive_child_dict
     self.data_dict["keyword_dict"]=self.keyword_dict
   def save(self,json_fpath):
     data_dict_json=json.dumps(self.data_dict)
