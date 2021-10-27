@@ -144,6 +144,7 @@ class html_page:
     for key,val in repl_dict0.items():
       if key.startswith("#"): #we use jquery notation # to indicate element ID
         cur_id_pair=self.replace_by_id(key[1:],val)
+        if cur_id_pair==None: continue
         all_replacements.append(cur_id_pair)
       if key.startswith("."): #we use jquery notation . to indicate element classname
         cur_class_pairs=self.replace_by_class(key[1:],val)
