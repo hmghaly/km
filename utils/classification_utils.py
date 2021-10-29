@@ -228,11 +228,11 @@ class cat_struct: #processing the category structure excel file
       if norm_parent2: 
         if alias2: cur_alias2=alias2
         else: cur_alias2=cat_name
-        parent_child_list.append((norm_parent1,(norm_cat,cur_alias2)))
+        parent_child_list.append((norm_parent2,(norm_cat,cur_alias2)))
       if norm_parent3: 
         if alias3: cur_alias3=alias3
         else: cur_alias3=cat_name
-        parent_child_list.append((norm_parent1,(norm_cat,cur_alias3)))
+        parent_child_list.append((norm_parent3,(norm_cat,cur_alias3)))
 
       self.keyword_dict[norm_cat]=re.findall("\w+",keywords.lower())
 
