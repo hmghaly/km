@@ -124,8 +124,9 @@ def reverse_url(full_url): #make site.abc.gov.au > au.gov.abc.site to sort by th
   first_part=url_split[0]
   second_part="/".join(url_split[1:])
   first_part=".".join(reversed(first_part.split(".")))
-  if second_part: return first_part+"/"+second_part
-  else: return first_part
+  if second_part: r_url=first_part+"/"+second_part #return first_part+"/"+second_part
+  else: r_url=first_part #return first_part
+  return r_url.strip("/")
 
 
 def get_content(webpage_url):

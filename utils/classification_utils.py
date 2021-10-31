@@ -237,10 +237,14 @@ class cat_struct: #processing the category structure excel file
       self.keyword_dict[norm_cat]=re.findall("\w+",keywords.lower())
 
     parent_child_list.sort()
+    # for pc in parent_child_list:
+    #   print(pc)
     grouped=[(key,[v[1] for v in group]) for key,group in groupby(parent_child_list,lambda x:x[0])]
-    self.child_dict=dict(iter(grouped))
-    for k,v in self.child_dict.items():
+    #self.child_dict=dict(iter(grouped))
+    #for k,v in self.child_dict.items():
+    for k,v in grouped:
       self.child_dict[k]=list(set(v))
+      #print(k,v)
 
     def get_children(child_dict0,cat_id0,level=0):
       for child in child_dict0.get(cat_id0,[]): #node['children']:
@@ -252,6 +256,14 @@ class cat_struct: #processing the category structure excel file
     for key in self.child_dict:
       grand_children=list(get_children(self.child_dict,key))
       self.recursive_child_dict[key]=grand_children
+    
+    self.cat_list=[]
+    for cat_id,cat_name in self.id_dict.items(): 
+      if cat_id: self.cat_list.append((cat_name,cat_id))
+    self.cat_list.sort()    
+
+
+
 
     self.data_dict["parent_list"]=self.parent_list
     self.data_dict["icon_dict"]=self.icon_dict
@@ -262,6 +274,8 @@ class cat_struct: #processing the category structure excel file
     self.data_dict["child_dict"]=self.child_dict
     self.data_dict["recursive_child_dict"]=self.recursive_child_dict
     self.data_dict["keyword_dict"]=self.keyword_dict
+    self.data_dict["cat_list"]=self.cat_list
+
   def save(self,json_fpath):
     data_dict_json=json.dumps(self.data_dict)
     json_fopen=open(json_fpath,"w")
