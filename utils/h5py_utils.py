@@ -2,6 +2,10 @@ import h5py
 import re, time
 from collections import Counter
 import numpy as np
+import numpy.linalg as lin
+from numpy import dot
+#from numpy.linalg import norm
+
 
 #same as the one we use for classification_utils, but we copy here to avoid importing it
 def get_words_vector(words,wv_model,excluded_words=[]):
@@ -31,12 +35,20 @@ def get_h5_words_vec(words0,h5_obj0):
   cur_overall_vec,cur_wd_vec=get_words_vector(words0,tmp_dict,excluded_words=[])
   return cur_overall_vec,cur_wd_vec
 
+def cos_sim(a,b):
+  return dot(a, b)/(lin.norm(a)*lin.norm(b))
+
+
 if __name__=="__main__":
   sent="agricultural tractors"
   words=re.findall("\w+",sent.lower())
+  sent2="artistic paintinings"
+  words2=re.findall("\w+",sent2.lower())
   h5_fopen = h5py.File("au_wv.hdf5", "r")
   t0=time.time()
   cur_vec0,wd_vec0=get_h5_words_vec(words,h5_fopen)
+  cur_vec2,wd_vec2=get_h5_words_vec(words2,h5_fopen)
+  cur_sim=cos_sim(cur_vec0,cur_vec2)
   t1=time.time()
   h5_fopen.close()
-  print(cur_vec0,t1-t0)  
+  print(cur_vec0,t1-t0, "cur_sim",cur_sim)  
