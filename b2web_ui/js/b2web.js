@@ -9,6 +9,9 @@ function submit_website(){
 	console.log(form_vals_dict)
 	post_data("add_business",form_vals_dict,function(obj1){
 		console.log(obj1)
+		console.log(str(obj1))
+		alert("Your website is successfully added! Check your profile for all the websites you submitted.")
+		$('.modal').modal('hide');
 	})
 }
 
@@ -63,4 +66,35 @@ function email_download_results(){
 
 function search_for_category(){
 	//from a search query, identify the corresponding categories
+	//resultModal
+	//document.getElementById("resultModal").showModal();
+	cur_qs_dict=parse_qs()
+	search_val=$$("input_category_search").value
+	country=cur_qs_dict["country"]
+	console.log([search_val,country])
+	form_vals_dict={"query":search_val}
+	post_data("cat_vec",form_vals_dict,function(obj1){
+		console.log(obj1)
+		console.log(str(obj1))
+		$$("search_category_content").innerHTML="<ul>"
+		for (item of obj1){
+			//<li><i class="fal fa-tag"></i>Category name</li>
+			cat0=item[0]
+			cat_name0=item[1]
+			href="category?country=_country_&cat=_cat_".replace("_country_",country).replace("_cat_",cat0)
+			link='<a href="_href_">_cat_name_</a>'.replace("_href_",href).replace("_cat_name_",cat_name0)
+			full_str='<li><i class="fal fa-tag"></i> _link_</li><br>'.replace("_link_",link)
+			$$("search_category_content").innerHTML+=full_str
+			console.log(full_str)
+		}
+		$$("search_category_content").innerHTML+="</ul>"
+		//alert("Your website is successfully added! Check your profile for all the websites you submitted.")
+		//$('.modal').modal('hide');
+	})
+
+	// form_vals_dict=get_vals("add_business_frm")
+	// form_vals_dict["country"]=cur_qs_dict["country"]
+
+	$("#resultModal").modal()
+	//alert("Hello!")
 }

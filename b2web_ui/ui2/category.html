@@ -320,13 +320,14 @@
                     <div class="app-search-box">
                         <span>Can't find what you're looking for?</span>
                         <h3 class="title">Search for a category.</h3>
-                        <form action="#">
+                        <form action="javascript:void(0);">
                             <div class="input-box">
-                                <input type="text" placeholder="Enter category name">
+                                <input id="input_category_search" type="text" placeholder="Enter category name">
                             </div>
                             
                             <div class="input-box">
-                                <button data-toggle="modal" data-target="#resultModal" type="button">Search</button>
+                                <!-- <button data-toggle="modal" data-target="#resultModal" type="button">Search</button> -->
+                                <button onclick="search_for_category()" type="button">Search</button>
                             </div>
                             
                         </form>
@@ -421,7 +422,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Login To Account</h1>
                             <div class="form-group">
                                 <input type="email" name="email" placeholder="E-mail Address">
@@ -461,7 +462,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Register New Account</h1>
                             <div class="form-group">
                                 <input type="text" name="name" placeholder="Full Name">
@@ -509,7 +510,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <!-- <h1>Add Your Business</h1> -->
 <!--                             <div class="form-group">
                                 <input type="text" name="name" placeholder="Name of business">
@@ -536,7 +537,7 @@
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div> 
 
-<div class="form-group">
+                            <div class="form-group">
                                 <select id="category_select_dropdown" class="select2 form-control add_business_frm" name="business_category">
                                     <option value="">Business Category</option>
 <!--                                     <option value="AL">Alabama</option>
@@ -618,7 +619,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Contact Us</h1>
                             <div class="form-group">
                                 <input type="text" name="name" placeholder="Name">
@@ -655,7 +656,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="service-details-sidebar">
-                        <div class="service-category-widget">
+                        <div id="search_category_content" class="service-category-widget">
                                 <ul>
                                     <li><i class="fal fa-tag"></i>Category name</li>
                                     <li><i class="fal fa-tag"></i>Category name</li>
@@ -665,7 +666,7 @@
 
                                 </ul>
                             </div>
-                            <div id="search_category_content"></div>
+                            <!-- <div ></div> -->
                         </div>
                 </div>
             </div>

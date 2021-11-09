@@ -217,7 +217,7 @@
                 <div class="col-lg-12">
                     <div class="app-section-title text-center">
                         <h3 class="app-title">Browse All Categories</h3>
-                        <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Architecto ratione repellat aliquam .</p>
+                        <p>Each category contains listings of websites classified and compiled by AI and by manual methods. <a href="#" data-toggle="modal" data-target="#disclaimerModal">Disclaimer</a></p>
                     </div>                    
                 </div>
             </div>
@@ -792,13 +792,14 @@
                     <div class="app-search-box">
                         <span>Can't find what you're looking for?</span>
                         <h3 class="title">Search for a category.</h3>
-                        <form action="#">
+                        <form action="javascript:void(0);">
                             <div class="input-box">
-                                <input type="text" placeholder="Enter category name">
+                                <input id="input_category_search" type="text" placeholder="Enter category name">
                             </div>
                             
                             <div class="input-box">
-                                <button data-toggle="modal" data-target="#resultModal" type="button">Search</button>
+                                <!-- <button data-toggle="modal" data-target="#resultModal" onclick="search_for_category()" type="button">Search</button> -->
+                                <button onclick="search_for_category()" type="button">Search</button>
                             </div>
                             
                         </form>
@@ -892,7 +893,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Login To Account</h1>
                             <div class="form-group">
                                 <input type="email" name="email" placeholder="E-mail Address">
@@ -932,7 +933,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Register New Account</h1>
                             <div class="form-group">
                                 <input type="text" name="name" placeholder="Full Name">
@@ -980,7 +981,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
 <!--                             <h1>Add Your Business</h1> -->
                             <div class="form-group">
                                 <input type="text" name="business_name" class="add_business_frm" placeholder="Name of business">
@@ -1069,7 +1070,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Contact Us</h1>
                             <div class="form-group">
                                 <input type="text" name="name" placeholder="Name">
@@ -1106,7 +1107,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="service-details-sidebar">
-                        <div class="service-category-widget">
+                            <div id="search_category_content" class="service-category-widget">
                                 <ul>
                                     <li><i class="fal fa-tag"></i>Category name</li>
                                     <li><i class="fal fa-tag"></i>Category name</li>
@@ -1116,7 +1117,7 @@
 
                                 </ul>
                             </div>
-                            <div id="search_category_content"></div>
+<!--                             <div id="search_category_content"></div> -->
                         </div>
                 </div>
             </div>
@@ -1128,13 +1129,25 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="disclaimerModalLabel"> modal title </h5>
+                    <h5 class="modal-title" id="disclaimerModalLabel"> Disclaimer </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div id="search_category_content"></div>
+                    <div id="disclaimer_content">
+                        <ul>
+                            <li>Results displayed to the website user are generated using an Artificial Intelligence algorithm. Due to the significant variability in websites’ contents and the nature of the algorithm, not all results are therefore accurate. KMatters TM does not guarantee the relevance of the results to the industry category selected.</li>
+                            <li>Although KMatters TM runs its algorithm regularly, results and external website contents may change by their owners after the most recent run. Accordingly, the external website content may not match with categories selected.</li>
+                            <li>The list of industry categories may not include all categories of interest to the user. The list is being updated regularly.</li>
+                            <li>Users can report any irrelevant results or missing information to b2web@kmatters.com</li>
+                            <li>KMatters TM does not warrant that its website is free from harmful code, computer viruses or other defects.</li>
+                            <li>KMatters TM is not liable for any losses (including any loss of revenue or profits, loss of data, any penalties or fines imposed by a regulator and any loss that is indirect loss) that you suffer or for any costs, damages, expenses, loss or charges that you incur as a result of accessing KMatters TM or B2WEBTM websites or any websites linked to them.</li>
+                        </ul>
+                        
+
+
+                    </div>
                 </div>
             </div>
         </div>
