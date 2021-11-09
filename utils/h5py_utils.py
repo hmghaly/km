@@ -28,7 +28,7 @@ def get_h5_words_vec(words0,h5_obj0):
   for w0 in words0:
     out=h5_obj0.get(w0)
     if out!=None: tmp_dict[w0]=np.array(out)
-  cur_overall_vec,cur_wd_vec=get_words_vector(words,tmp_dict,excluded_words=[])
+  cur_overall_vec,cur_wd_vec=get_words_vector(words0,tmp_dict,excluded_words=[])
   return cur_overall_vec,cur_wd_vec
 
 if __name__=="__main__":
