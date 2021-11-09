@@ -4,8 +4,14 @@ import traceback
 from sqlitedict import SqliteDict #Make sure to install it 
 from lxml import html #Make sure to install it 
 from bs4 import BeautifulSoup #Make sure to install it 
+# import gensim #make sure to install it - also install numpy and pandas - install h5py
 
-
+#============== Variables ================
+#Main variables: posted_data_dict
+#qs_dict country domain cat start_i n_results_per_page data_version country_name
+#structure_dict parent_list child_dict id_dict description_dict recursive_child_dict cat_list keyword_dict
+#country_version_dict country_name_dict
+#b2web_model vector_dict
 
 sys.path.insert(0, os.path.dirname(__file__))
 km_utils_dir='/home/sod9mlnmvhfv/km_code/utils'
@@ -13,7 +19,9 @@ sys.path.insert(0,km_utils_dir)
 from file_utils import *
 from template_utils import *
 from extraction_utils import *
-#import gensim
+from h5py_utils import *
+# from classification_utils import *
+
 
 country_version_dict={} #specifying where is the working version for the AI data for each language
 country_version_dict["au"]="oct21"
@@ -76,22 +84,29 @@ txt_dir="../txt"
 structure_fname="data_dict.json"
 structure_fpath=os.path.join(txt_dir,structure_fname)
 structure_content=read_file(structure_fpath)
-structure_dict=json.loads(structure_content)
+structure_dict=json.loads(structure_content) 
 parent_list=structure_dict["parent_list"]
 child_dict=structure_dict["child_dict"]
 id_dict=structure_dict["id_dict"]
 description_dict=structure_dict["description_dict"] #id_dict description_dict child_dict
 recursive_child_dict=structure_dict["recursive_child_dict"]
 cat_list=structure_dict["cat_list"]
-#now recursively get all the children        
-# def get_children(child_dict0,cat_id0):
-#     for child in child_dict0.get(cat_id0,[]): #node['children']:
-#         yield child
-#         for grandchild in get_children(child_dict0,child[0]):
-#             yield grandchild
-# rec_child_dict={}
-# for key in child_dict:
-#     rec_child_dict[key]=list(get_children(child_dict,key))
+keyword_dict=structure_dict["keyword_dict"]
+
+# Word2Vec model
+wv_fpath=os.path.join(txt_dir,"b2web_au.model")
+h5_fpath=os.path.join(txt_dir,"au_wv.hdf5")
+# b2web_model = gensim.models.Word2Vec.load(wv_fpath)
+h5_fopen = h5py.File(h5_fpath, "r")
+vector_dict={} 
+vector_dict1={}
+for cat0,keywords0 in keyword_dict.items():
+    if keywords0==[]: continue
+    #tmp_vec0,tmp_wd_vec_dict=get_words_vector(keywords0,b2web_model,excluded_words=[])
+    tmp_vec0,tmp_wd_vec_dict=get_h5_words_vec(keywords0,h5_fopen)
+    vector_dict[cat0]= tmp_vec0
+    #vector_dict1[cat0]= tmp_wd_vec_dict
+  
 
 #experiment with new things
 # try:
@@ -104,6 +119,7 @@ cat_list=structure_dict["cat_list"]
 #   trace=traceback.format_exc() results_retrieval(cat, start_i, country,data_version,domain,n_results_per_page,km_data_dir,recursive_child_dict)
 def gen_pagination(start_i,n_results_per_page,n_full):
     displayed_pages=[]
+    if n_full==0: return displayed_pages
     cur_page_j=int(start_i/n_results_per_page)+1 #if start_i is 20, then we're talking about page 3 (p1: 0, p2: 10, p3: 20)
     last_page_j=math.ceil(n_full/n_results_per_page) #the actual number of result pages is the number of lines of the cat file/n_results per page
     #last_page_i=n_results_per_page*(n_pages-1) #the start_i value for the last page
@@ -240,7 +256,7 @@ def app(environ, start_response):
 
     #We start by identifying the script name and the query string from the URL
     qs=environ["QUERY_STRING"]
-    qs_dict=parse_qs(qs)
+    qs_dict=parse_qs(qs) 
     country=qs_dict.get("country",["au"])[0] 
     domain=qs_dict.get("domain",["com"])[0] 
     cat=qs_dict.get("cat",["electric-maintenance-contracting-services"])[0] 
@@ -712,6 +728,52 @@ def app(environ, start_response):
         repl_dict2[location_select_id]=create_selection_options(cur_dropdown_list)
 
         page_content=soup_replace_by_ids(page_content,repl_dict2)
+
+    elif script_name=="w2v":
+        query_word="glass"
+        query_word=qs_dict.get("word",[query_word])[0]
+        try: similar=b2web_model.wv.most_similar(query_word)
+        except: similar=[]
+        page_content=str(similar)
+
+    elif script_name=="cat_vec":
+        #vector_dict tmp_vec0,tmp_wd_vec_dict=get_words_vector(keywords0,b2web_model,excluded_words=[])
+
+        # test_json='{"business_name":"vxcv","business_email":"ab@dd.com","business_url":"https://www.packagingdirect.com.au/","business_category":"food-beverages-packaging","business_location":"Albury, New South Wales","business_description":"Located in Brisbane, Packaging Direct provides the Australian hospitality industry schools, corporate functions and anyone having a celebration/party with a wide variety of high-quality catering supplies.","country":"au","user_email":"test@test.com"}'
+        # if posted_data: test_json=posted_data
+        # json_dict=json.loads(test_json)
+        
+        query="cattle sheep"
+        query=qs_dict.get("query",[query])[0]
+        posted_query=posted_data_dict.get("query")
+        if posted_query!=None: query=posted_query
+
+        
+        #query=posted_data_dict.get("query",query)
+        query_words=re.findall("\w+",query)
+
+        #query_words=[query_word]
+        #query_vec0,query_wd_vec_dict=get_words_vector(query_words,b2web_model,excluded_words=[])
+        query_vec0,query_wd_vec_dict=get_h5_words_vec(query_words,h5_fopen)
+        tmp_cat_list=[]
+        for cat0, cat_vec0 in vector_dict.items():
+            score0=cos_sim(query_vec0,cat_vec0)
+            cat_name=id_dict.get(cat0)
+            if cat_name==None: continue
+            tmp_cat_list.append((str(cat0),cat_name,round(float(score0),3) ))
+        tmp_cat_list.sort(key=lambda x:-x[-1])
+        # tmp_content="You searched for: %s <br>"%str(query_words)
+        # for a0,b0 in tmp_cat_list[:10]:
+        # 	tmp_content+="<b>%s</b>: %s<br>"%(a0,round(b0,3))
+
+        json_content=json.dumps(tmp_cat_list[:10])
+
+        # cur_url=json_dict.get("business_url","")        
+        # query_word="glass"
+        # query_word=qs_dict.get("word",[query_word])[0]
+        # try: similar=b2web_model.wv.most_similar(query_word)
+        # except: similar=[]
+        page_content=json_content#tmp_content #str(tmp_cat_list)
 
     elif script_name=="json":
         page_content=str(recursive_child_dict)#+"<br><br>"+str(child_dict)
