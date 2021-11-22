@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="en">
+
+
+<head>
+   
+    <!--====== Required meta tags ======-->
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+    <!--====== Title ======-->
+    <title>B2web</title>
+    
+    <!--====== Favicon Icon ======-->
+    <link rel="shortcut icon" href="assets/images/favicon.png" type="image/png">
+
+    <!--====== Bootstrap css ======-->
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    
+    <!--====== Fontawesome css ======-->
+    <link rel="stylesheet" href="assets/css/font-awesome.min.css">
+    
+    
+        
+    <!--====== Default css ======-->
+    <link rel="stylesheet" href="assets/css/default.css">
+        <link rel="stylesheet" href="assets/css/form.css">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!--====== Style css ======-->
+    <link rel="stylesheet" href="assets/css/style.css">
+  
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-211607218-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-211607218-1');
+</script>
+
+  
+</head>
+
+<body>  
+
+    <!--====== PRELOADER PART START ======-->
+
+    <div class="loader-wrap">
+        <div class="preloader"><div class="preloader-close">Preloader Close</div></div>
+        <div class="layer layer-one"><span class="overlay"></span></div>
+        <div class="layer layer-two"><span class="overlay"></span></div>        
+        <div class="layer layer-three"><span class="overlay"></span></div>        
+    </div>
+
+    <!--====== PRELOADER PART ENDS ======-->
+
+    <!--====== OFFCANVAS MENU PART START ======-->
+
+    <divclass="off_canvars_overlay">
+                
+    </div>
+    <div id="side_menu"  class="offcanvas_menu">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="offcanvas_menu_wrapper">
+                        <div class="canvas_close">
+                            <a href="javascript:void(0)"><i class="fa fa-times"></i></a>  
+                        </div>
+                        <div class="offcanvas-brand text-center mb-40">
+                            <span class="brand"> B2Web  </span>
+                        </div>
+                        <div id="menu" class="text-left ">
+                            <ul class="offcanvas_main_menu">
+                                <li class="menu-item-has-children active">
+                                    <a href="#">Home</a>
+                                    
+                                </li>
+                                <li class="menu-item-has-children active">
+                                    <a href="#">About</a>
+                                </li>
+                                
+                                <li class="menu-item-has-children active">
+                                    <a href="#">Country</a>
+                                    <ul class="sub-menu">
+                                        <li><a href="index?country=au">Australia</a></li>
+                                        <li><a href="index?country=nz">New Zealand</a></li>
+                                        
+                                    </ul>
+                                </li>
+<!--                                 <li class="menu-item-has-children active">
+                                    <a href="#">Language</a>
+                                    <ul class="sub-menu">
+                                        <li><a href="#">English</a></li>
+                                        <li><a href="#">Arabic</a></li>
+                                        <li><a href="#">French</a></li>
+                                        
+                                    </ul>
+                                </li> -->
+                                <li class="menu-item-has-children active">
+                                    <a href="contact.html">Contact</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="offcanvas-social">
+                            <ul class="text-center">
+                                <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+                                <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+                                <li><a href="#"><i class="fab fa-instagram"></i></a></li>
+                                <li><a href="#"><i class="fab fa-dribbble"></i></a></li>
+                            </ul>
+                        </div>
+                        <div class="footer-widget-info">
+                            <ul>
+                                <li><a href="#"><i class="fal fa-envelope"></i> support@app.com</a></li>
+                                <li><a href="#"><i class="fal fa-phone"></i> +(642) 342 762 44</a></li>
+                                <li><a href="#"><i class="fal fa-map-marker-alt"></i> 442 Belle Terre St Floor 7, San Francisco, AV 4206</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--====== OFFCANVAS MENU PART ENDS ======-->
+   
+    <!--====== PART START ======-->
+    
+    <header  id="header" class="app-header-area app-header-page-area app-sticky">
+        <div class="container">
+            <div class="header-nav-box header-nav-box-3 header-nav-box-inner-page">
+                <div class="row align-items-center">
+                    <div class="col-lg-2 col-md-4 col-sm-5 col-6 order-1 order-sm-1">
+                        <div class="app-logo-box">
+                            <a href="#">
+                                <span class="brand"> B2Web  </span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6 col-md-1 col-sm-1 order-3 order-sm-2">
+                        <div class="app-header-main-menu">
+                            <ul>
+                                <li>
+                                    <a href="index.html">Home </a>
+                                    
+                                </li>
+                                <li>
+                                    <a href="about.html">About</a>
+                                </li>
+                                <li> 
+                                    <a href="#">Country <i class="fal fa-angle-down"></i></a>
+                                    <ul class="sub-menu">
+                                        <li><a href="index?country=au">Australia</a></li>
+                                        <li><a href="index?country=nz">New Zealand</a></li>
+                                        
+                                    </ul>
+                                </li>
+<!--                                 <li>
+                                    <a href="#">Language <i class="fal fa-angle-down"></i></a>
+                                    <ul class="sub-menu">
+                                        <li><a href="#">English</a></li>
+                                        <li><a href="#">Arabic</a></li>
+                                        <li><a href="#">French</a></li>
+                                       
+                                        
+                                    </ul>
+                                </li> -->
+                                <li><a href="#" data-toggle="modal" data-target="#contactModal">Contact</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-4  col-md-7 col-sm-6 col-6 order-2 order-sm-3">
+                        <div class="app-btn-box text-right">
+                            <a class="login-btn" href="#" data-toggle="modal" data-target="#loginModal"><i class="fal fa-user"></i> Login</a>
+                            <a class="main-btn ml-30" href="#" data-toggle="modal" data-target="#registerModal">Get Started</a>
+                            <div class="toggle-btn ml-30 canvas_open d-lg-none d-block">
+                                <i class="fa fa-bars"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    
+    <!--====== PART ENDS ======-->
+
+    <!--====== app PAGE TITLE PART START ======-->
+    
+    <div  id="page_title" class="app-page-title-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="app-page-title-item">
+                        <h3 class="title"> Terms and Conditions </h3>
+                        <P class="tagline">
+                             123 Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur possimus nisi nam ab mollitia recusandae perferendis cum, tenetur sapiente, 
+                        </P>
+                        
+                            
+                        <p class="subcategory-links">
+                            <a class="back" href="intro"> <i class="fa fa-chevron-left"></i> Bake to main page </a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!--====== app PAGE TITLE PART ENDS ======-->
+
+    <section id="terms_content" class="pb-100 pt-90">
+      
+    </section>
+    
+    <!--====== app FUN FACT PART START ======-->
+ 
+
+
+
+    
+    <!--====== app FOOTER PART START ======-->
+    
+    <section id="footer" class="app-footer-area app-footer-about-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 col-md-6">
+                    <div class="footer-about-widget">
+                        <div class="logo">
+                            <a href="#">
+                                
+                                <span class="brand"> B2Web  </span>
+                            </a>
+                        </div>
+                        <p> B2Web is a product of KMatters  </p>
+                        <a href="about.html">Learn More <i class="fal fa-arrow-right"></i></a>
+                        <div class="social mt-30">
+                            <ul>
+                                <li><a href="#"><i class="fab fa-facebook-f"></i></a></li>
+                                <li><a href="#"><i class="fab fa-twitter"></i></a></li>
+                                <li><a href="#"><i class="fab fa-pinterest-p"></i></a></li>
+                                <li><a href="#"><i class="fab fa-linkedin-in"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="footer-navigation">
+                        <h4 class="title">Useful links</h4>
+                        <ul>
+                            <li><a href="about">About Us</a></li>
+                            <li><a href="http://kmatters.com" target="new">KMatters </a></li>
+                            <li><a href="#" data-toggle="modal" data-target="#disclaimerModal">Disclaimer </a></li>
+                            <li><a href="privacy">Privacy Policy</a></li>
+                            <li><a href="terms">Terms and Conditions</a></li>
+                            <li><a href="#" data-toggle="modal" data-target="#contactModal">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+                
+                
+            </div>
+          <div class="row">
+                <div class="col-lg-12">
+                    <div class="footer-copyright d-flex align-items-center justify-content-between pt-35">
+                       
+                        <div class="copyright-text">
+                            <p>COPYRIGHT© 2021 KMATTERS. All rights reserved.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!--====== app FOOTER PART ENDS ======-->
+
+
+    <!--====== app BACK TO TOP PART ENDS ======-->
+    <div class="back-to-top">
+        <a href="#"><i class="fal fa-arrow-up"></i></a>
+    </div>
+    <!--====== app BACK TO TOP PART ENDS ======-->
+
+
+
+       
+    <!-- Login modals -->
+
+    
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Login</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="login-form">
+                            <form>
+                            <h1>Login To Account</h1>
+                            <div class="form-group">
+                                <input type="email" name="email" placeholder="E-mail Address">
+                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="psw" placeholder="Password">
+                                <span class="input-icon"><i class="fa fa-lock"></i></span>
+                            </div>      
+                            <button class="login-btn">Login</button>      
+                            <a class="reset-psw" href="#">Forgot your password?</a>
+                            <div class="seperator"><b>or</b></div>
+                            <p>Sign in with your social media account</p>
+                            <!-- Social login buttons -->
+                            <div class="social-icon">
+                                <button class="go" type="button"><i class="fab fa-google"></i></button>
+                                <button class="fa" type="button"><i class="fab fa-facebook"></i></button>
+                            </div>
+                            </form>
+                        </div>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+    
+    <!-- Login modals -->
+    <!-- register modals -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Register</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="login-form">
+                            <form>
+                            <h1>Register New Account</h1>
+                            <div class="form-group">
+                                <input type="text" name="name" placeholder="Full Name">
+                                <span class="input-icon"><i class="fa fa-user"></i></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" name="email" placeholder="E-mail Address">
+                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="psw" placeholder="Password">
+                                <span class="input-icon"><i class="fa fa-lock"></i></span>
+                            </div>      
+                            <div class="form-group">
+                                <input type="password" name="psw" placeholder="Confirm Password">
+                                <span class="input-icon"><i class="fa fa-lock"></i></span>
+                            </div>      
+                            <button class="login-btn">register</button>      
+                        
+                            <div class="seperator"><b>or</b></div>
+                            <p>Sign in with your social media account</p>
+                            <!-- Social login buttons -->
+                            <div class="social-icon">
+                                <button class="go" type="button"><i class="fab fa-google"></i></button>
+                                <button class="fa" type="button"><i class="fab fa-facebook"></i></button>
+                            </div>
+                            </form>
+                        </div>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+    <!-- register modals -->
+    
+    <!-- business modals -->
+    <div class="modal fade" id="businessModal" tabindex="-1" aria-labelledby="businessModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="businessModalLabel">Business</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="login-form">
+                            <form>
+                            <h1>Add Your Business</h1>
+                            <div class="form-group">
+                                <input type="text" name="name" placeholder="Name of business">
+                                <span class="input-icon"><i class="fa fa-user"></i></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" name="email" placeholder="E-mail Address">
+                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="url" name="url" placeholder="Business website address">
+                                <span class="input-icon"><i class="fa fa-lock"></i></span>
+                            </div>      
+                            <div class="form-group">
+                                <select class="select2 form-control" name="state">
+                            <option value="">Business Category</option>
+                            <option value="AL">Alabama</option>
+                            <option value="WY">Wyoming</option>
+                            </select>
+                                <span class="input-icon"><i class="fa fa-tag"></i></span>
+                            </div>      
+                            <div class="form-group">
+                                    <label> Sponsored </label>
+                                    <div class="radio">
+                                <label for="yes"> <input id="yes" type="radio" name="sponsored" value="yes">   Yes </label>
+                                 <label for="no"> <input id="no" type="radio" name="sponsored" value="no">  No </label>
+                                </div>
+
+                            </div> 
+                            <div class="form-group">
+                                <select class="select2 form-control" name="state">
+                            <option value="">Location</option>
+                            <option value="AL">Alabama</option>
+                            <option value="WY">Wyoming</option>
+                            </select>
+                                <span class="input-icon"><i class="fa fa-map-marker-alt"></i></span>
+                            </div>      
+                            <div class="form-group">
+                                <select class="select2 form-control" name="state">
+                            <option value="">Nearest city</option>
+                            <option value="AL">Alabama</option>
+                            <option value="WY">Wyoming</option>
+                            </select>
+                                <span class="input-icon"><i class="fa fa-globe"></i></span>
+                            </div>      
+                               
+                            <button class="login-btn">Submit</button>      
+                        
+                            
+                            </form>
+                        </div>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+    <!-- business modals -->
+
+      <!-- contact modals -->
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-labelledby="contactModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="contactModalLabel">Contact</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="login-form">
+                            <form>
+                            <h1>Contact Us</h1>
+                            <div class="form-group">
+                                <input type="text" name="name" placeholder="Name">
+                                <span class="input-icon"><i class="fa fa-user"></i></span>
+                            </div>
+                            <div class="form-group">
+                                <input type="email" name="email" placeholder="E-mail Address">
+                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
+                            </div>
+                            <div class="form-group">
+                                <textarea class="form-control" type="txet" rows="5" name="message" placeholder="Your message"></textarea>
+                                
+                            </div>
+                                
+                            <button class="login-btn">Submit</button>      
+                            
+                            </form>
+                        </div>
+                </div>
+               
+            </div>
+        </div>
+    </div>
+    <!-- contact modals -->
+      <!-- result modals -->
+    <div class="modal fade" id="resultModal" tabindex="-1" aria-labelledby="resultModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resultModalLabel">Search results</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="service-details-sidebar">
+                        <div class="service-category-widget">
+                                <ul>
+                                    <li><i class="fal fa-tag"></i>Category name</li>
+                                    <li><i class="fal fa-tag"></i>Category name</li>
+                                    <li><i class="fal fa-tag"></i>Category name</li>
+                                    <li><i class="fal fa-tag"></i>Category name</li>
+                                    <li><i class="fal fa-tag"></i>Category name</li>
+
+                                </ul>
+                            </div>
+                            <div id="search_category_content"></div>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- result modals -->
+      <!-- disclaimer modals -->
+    <div class="modal fade" id="disclaimerModal" tabindex="-1" aria-labelledby="disclaimerModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="disclaimerModalLabel"> modal title </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div id="search_category_content"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- disclaimer modals -->
+      <!-- get Startred modals -->
+    <div class="modal fade" id="startModal" tabindex="-1" aria-labelledby="startModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="startModalLabel"> modal title </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    modal body
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- get Startred modals -->
+
+
+    
+    
+    
+    
+    
+    <!--====== jquery js ======-->
+    <script src="assets/js/vendor/jquery-1.12.4.min.js"></script>
+
+    <!--====== Bootstrap js ======-->
+    <script src="assets/js/bootstrap.min.js"></script>
+    
+    <!--====== wow js ======-->
+    <script src="assets/js/wow.js"></script>
+    
+    <!--====== Slick js ======-->
+
+    <!--====== TweenMax js ======-->
+    <script src="assets/js/TweenMax.min.js"></script>
+    
+    <!--====== Slick js ======-->
+    <script src="assets/js/slick.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!--====== Main js ======-->
+    <script src="assets/js/main.js"></script>
+
+</body>
+
+
+</html>
