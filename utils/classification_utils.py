@@ -298,7 +298,10 @@ def classify_cached(cached_fpath,classified_fpath,category_vector_dict0,wv_model
       t0_=time.time()
     #if i_>2000: break
     url=line.split("<br>")[0]  
-    content=" ".join(line.split("<br>")[1:])
+    meta=line.split("<br>")[1]
+    try: meta_dict=json.loads(meta)
+    except: meta_dict={}
+    content=" ".join(line.split("<br>")[2:])
     words=[v.lower() for v in re.findall("\w+",content)]
     if len(words)<20: continue
     #print("classify_cached", words[:10])
@@ -325,6 +328,7 @@ def classify_cached(cached_fpath,classified_fpath,category_vector_dict0,wv_model
     top_10_words=[v[0] for v in list(tc_obj.word_counts.most_common(10))]
     top_10_words_str=", ".join(top_10_words)
     page_info_obj={}
+    page_info_obj["meta"]=meta_dict
     page_info_obj["top_words"]=top_10_words
     page_info_obj["n_words"]=len(words)
     page_info_obj["top_preds"]=tc_obj.top_preds

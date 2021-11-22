@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #step 1 - main functions to get the content from web pages 
-import requests, re, os
+import requests, re, os, json
 from urllib.parse import urljoin, urlsplit
 from bs4 import BeautifulSoup
 #from lxml.html import parse
@@ -52,7 +52,17 @@ class web_page:
       return
 
     if soup.title: self.title=soup.title.string #Find the title
-    self.all_text_items.append(self.title)
+    # self.all_text_items.append(self.title)
+    # self.all_text_items.append("_br_")
+    self.description=""
+    found_description = soup.find("meta",  {"name":"description"})
+    if found_description!=None: self.description=found_description.attrs['content']
+    cur_meta={}
+    cur_meta["title"]=self.title
+    cur_meta["description"]=self.description
+
+
+    self.all_text_items.append(json.dumps(cur_meta))
     self.all_text_items.append("_br_")
 
 
@@ -132,7 +142,8 @@ def reverse_url(full_url): #make site.abc.gov.au > au.gov.abc.site to sort by th
 def get_content(webpage_url):
   #print(webpage_url)
   cur_page_obj=web_page(webpage_url)
-  return "<br>".join(cur_page_obj.segs) 
+  return "<br>".join(cur_page_obj.segs) #to skip the URL and meta dict of the first 2 segs
+  #return "<br>".join(cur_page_obj.segs[2:]) #to skip the URL and meta dict of the first 2 segs
 
 def file_len(fname): #get the number of lines in the cache file
   try:
