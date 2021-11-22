@@ -69,7 +69,7 @@ function search_for_category(){
 	//resultModal
 	//document.getElementById("resultModal").showModal();
 	cur_qs_dict=parse_qs()
-	search_val=$$("input_category_search").value
+	search_val=$$("input_category_search").value.toLowerCase()
 	country=cur_qs_dict["country"]
 	console.log([search_val,country])
 	form_vals_dict={"query":search_val}
