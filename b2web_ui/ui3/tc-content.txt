@@ -1,0 +1,19 @@
+<h2 class="title">Terms & Conditions for Website Use</h2>
+<h3 class="title">1. General</h3>
+1.1. Any use of B2WEBTM website by you constitutes acceptance of these Terms and Conditions.
+1.2. KMatters TM may make changes to these Terms and Conditions at any time without notice. Any changes to these terms and conditions will have immediate effect.
+1.3. KMatters TM may terminate or suspend this website at any time without notice.
+<h3 class="title">2. Disclaimer</h3>
+2.1. Results displayed to the website user are generated using an Artificial Intelligence algorithm. Due to the significant variability in websites’ contents and the nature of the algorithm, not all results are therefore accurate. KMatters TM does not guarantee the relevance of the results to the industry category selected.
+2.2. Although KMatters TM runs its algorithm regularly, results and external website contents may change by their owners after the most recent run. Accordingly, the external website content may not match with categories selected.
+2.3. The list of industry categories may not include all categories of interest to the user. The list is being updated regularly. 
+2.4. Users can report any irrelevant results or missing information to b2web@kmatters.com
+2.5. KMatters TM does not warrant that its website is free from harmful code, computer viruses or other defects.
+2.6. KMatters TM is not liable for any losses (including any loss of revenue or profits, loss of data, any penalties or fines imposed by a regulator and any loss that is indirect loss) that you suffer or for any costs, damages, expenses, loss or charges that you incur as a result of accessing KMatters TM or B2WEBTM websites or any websites linked to them.
+<h3 class="title">3. Linking to External Websites</h3>
+3.1. The algorithm used enables search of publicly available websites. KMatters TM is not the author of and therefore not responsible for the content in any of the domain names listed in search results. KMatters TM is not responsible for the content on any external website. KMatters TM does not accept any liability or responsibility for any such websites or data collected by these external websites. Access to these websites is at users’ own risk.  
+3.2 B2WEBTM does not conduct any due diligence on the businesses whose websites are listed in search results. Users should conduct their own due diligence before making any commercial dealings with businesses whose websites are listed in the search results.
+<h3 class="title">4. Intellectual Property</h3>
+4.1. Intellectual property rights (including any copyright, trademark rights) in the content on this website, are owned by KMatters TM, subject to any third-party rights.
+You may not copy, use, reproduce or modify any content displayed on this website including classification structure, business entry forms, logos or trademark/s without KMatters TM’ written consent. To seek permission, please contact b2web@kmatters.com
+

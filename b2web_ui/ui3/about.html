@@ -11,7 +11,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     
     <!--====== Title ======-->
-    <title>B2web</title>
+    <title>B2WEB</title>
     
     <!--====== Favicon Icon ======-->
     <link rel="shortcut icon" href="assets/images/favicon.png" type="image/png">
@@ -31,6 +31,10 @@
 
     <!--====== Style css ======-->
     <link rel="stylesheet" href="assets/css/style.css">
+
+    <!--====== Additional utility JS functions ======-->
+    <script src="../b2web_ui/js/script.js"></script>
+    <script src="../b2web_ui/js/b2web.js"></script>
   
 <!-- Global site tag (gtag.js) - Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=UA-211607218-1"></script>
@@ -45,7 +49,7 @@
   
 </head>
 
-<body>  
+<body onload="init()">  
 
     <!--====== PRELOADER PART START ======-->
 
@@ -72,7 +76,7 @@
                             <a href="javascript:void(0)"><i class="fa fa-times"></i></a>  
                         </div>
                         <div class="offcanvas-brand text-center mb-40">
-                            <span class="brand"> B2Web </span>
+                            <span class="brand"> B2WEB </span>
                         </div>
                         <div id="menu" class="text-left ">
                             <ul class="offcanvas_main_menu">
@@ -139,7 +143,7 @@
                     <div class="col-lg-2 col-md-4 col-sm-5 col-6 order-1 order-sm-1">
                         <div class="app-logo-box">
                             <a href="#">
-                                <span class="brand"> B2Web </span>
+                                <span class="brand"> B2WEB </span>
                             </a>
                         </div>
                     </div>
@@ -177,8 +181,14 @@
                     </div>
                     <div class="col-lg-4  col-md-7 col-sm-6 col-6 order-2 order-sm-3">
                         <div class="app-btn-box text-right">
-                            <a class="login-btn" href="#" data-toggle="modal" data-target="#loginModal"><i class="fal fa-user"></i> Login</a>
+<!--                             <a class="login-btn" href="#" data-toggle="modal" data-target="#loginModal"><i class="fal fa-user"></i> Login</a>
                             <a class="main-btn ml-30" href="#" data-toggle="modal" data-target="#registerModal">Get Started</a>
+ -->                            
+                            <a class="logged-out login-btn" data-toggle="modal" data-target="#loginModal" href="#"><i class="fal fa-user"></i> Login</a>
+                            <a data-toggle="modal" data-target="#registerModal" class="logged-out main-btn ml-30" href="#">Get Started</a>
+                            <a class="logged-in login-btn" href="profile">Profile <i class="fal fa-user"></i> </a>
+                            <a class="logged-in login-btn" onclick="logout()" href="javascript:void(0);"> Logout <i class="fal fa-sign-out"></i> </a>
+
                             <div class="toggle-btn ml-30 canvas_open d-lg-none d-block">
                                 <i class="fa fa-bars"></i>
                             </div>
@@ -198,15 +208,24 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="app-page-title-item">
-                        <h3 class="title"> About B2web </h3>
-                        <P class="tagline">
+                        
+                        <div id="main_content" class="tagline">
+                            
+
+                        </div>
+<!--                         <P class="tagline">
                              Lorem ipsum dolor sit amet consectetur adipisicing elit. Pariatur possimus nisi nam ab mollitia recusandae perferendis cum, tenetur sapiente, 
-                        </P>
+                        </P> -->
                         
                         
+<!--                         <p class="subcategory-links">
+                            <a class="back" href="intro"> <i class="fa fa-chevron-left"></i> Back to main page1 </a>
+                        </p> -->
                         <p class="subcategory-links">
-                            <a class="back" href="intro"> <i class="fa fa-chevron-left"></i> Back to main page </a>
+                            <a id="prev_page" class="brand" href="intro"> <i class="fa fa-chevron-left"></i> Back to main page </a>
                         </p>
+
+
                     </div>
                 </div>
             </div>
@@ -235,10 +254,10 @@
                         <div class="logo">
                             <a href="#">
                                 
-                                <span class="brand"> B2Web </span>
+                                <span class="brand"> B2WEB </span>
                             </a>
                         </div>
-                        <p> B2Web is a product of KMatters  </p>
+                        <p> B2WEB is a product of KMatters  </p>
                         <a href="about">Learn More <i class="fal fa-arrow-right"></i></a>
                         <div class="social mt-30">
                             <ul>
@@ -304,17 +323,17 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Login To Account</h1>
                             <div class="form-group">
-                                <input type="email" name="email" placeholder="E-mail Address">
+                                <input class="login_form" type="email" name="email" placeholder="E-mail Address">
                                 <span class="input-icon"><i class="fa fa-envelope"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="password" name="psw" placeholder="Password">
+                                <input class="login_form" type="password" name="password" placeholder="Password">
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div>      
-                            <button class="login-btn">Login</button>      
+                            <button class="login-btn" onclick="login_user()">Login</button>      
                             <a class="reset-psw" href="#">Forgot your password?</a>
                             <div class="seperator"><b>or</b></div>
                             <p>Sign in with your social media account</p>
@@ -344,34 +363,36 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Register New Account</h1>
                             <div class="form-group">
-                                <input type="text" name="name" placeholder="Full Name">
+                                <input class="signup" type="text" name="name" placeholder="Full Name">
                                 <span class="input-icon"><i class="fa fa-user"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="email" name="email" placeholder="E-mail Address">
+                                <input class="signup" type="email" name="email" placeholder="E-mail Address">
                                 <span class="input-icon"><i class="fa fa-envelope"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="password" name="psw" placeholder="Password">
+                                <input class="signup" type="password" name="password" placeholder="Password">
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div>      
                             <div class="form-group">
-                                <input type="password" name="psw" placeholder="Confirm Password">
+                                <input class="signup" type="password" name="password2" placeholder="Confirm Password">
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div>      
-                            <button class="login-btn">register</button>      
+                            <button class="login-btn" onclick="signup_user()">register</button>      
                         
-                            <div class="seperator"><b>or</b></div>
-                            <p>Sign in with your social media account</p>
+<!--                             <div class="seperator"><b>or</b></div>
+                            <p>Sign in with your social media account</p> -->
                             <!-- Social login buttons -->
-                            <div class="social-icon">
+<!--                             <div class="social-icon">
                                 <button class="go" type="button"><i class="fab fa-google"></i></button>
                                 <button class="fa" type="button"><i class="fab fa-facebook"></i></button>
-                            </div>
+                            </div> -->
+                            
                             </form>
+
                         </div>
                 </div>
                
@@ -463,22 +484,22 @@
                 </div>
                 <div class="modal-body">
                     <div class="login-form">
-                            <form>
+                            <form action="javascript:void(0);">
                             <h1>Contact Us</h1>
                             <div class="form-group">
-                                <input type="text" name="name" placeholder="Name">
+                                <input class="feedback_form" type="text" name="name" placeholder="Name">
                                 <span class="input-icon"><i class="fa fa-user"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="email" name="email" placeholder="E-mail Address">
+                                <input class="feedback_form" type="email" name="email" placeholder="E-mail Address">
                                 <span class="input-icon"><i class="fa fa-envelope"></i></span>
                             </div>
                             <div class="form-group">
-                                <textarea class="form-control" type="txet" rows="5" name="message" placeholder="Your message"></textarea>
+                                <textarea class="form-control feedback_form" type="text" rows="5" name="message" placeholder="Your message"></textarea>
                                 
                             </div>
                                 
-                            <button class="login-btn">Submit</button>      
+                            <button class="login-btn" onclick="send_feedback()">Submit</button>      
                             
                             </form>
                         </div>
@@ -522,13 +543,21 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="disclaimerModalLabel"> modal title </h5>
+                    <h5 class="modal-title" id="disclaimerModalLabel"> Disclaimer </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div id="search_category_content"></div>
+                    <div id="disclaimer_content">
+                        &bull;  Results displayed to the website user are generated using an Artificial Intelligence algorithm. Due to the significant variability in websites’ contents and the nature of the algorithm, not all results are therefore accurate. KMatters TM does not guarantee the relevance of the results to the industry category selected.<br>
+                        &bull;  Although KMatters TM runs its algorithm regularly, results and external website contents may change by their owners after the most recent run. Accordingly, the external website content may not match with categories selected.
+                        &bull;  The list of industry categories may not include all categories of interest to the user. The list is being updated regularly. <br>
+                        &bull;  Users can report any irrelevant results or missing information to b2web@kmatters.com <br>
+                        &bull;  KMatters TM does not warrant that its website is free from harmful code, computer viruses or other defects.<br>
+                        &bull;  KMatters TM is not liable for any losses (including any loss of revenue or profits, loss of data, any penalties or fines imposed by a regulator and any loss that is indirect loss) that you suffer or for any costs, damages, expenses, loss or charges that you incur as a result of accessing KMatters TM or B2WEBTM websites or any websites linked to them. 
+                    </div>
+
                 </div>
             </div>
         </div>

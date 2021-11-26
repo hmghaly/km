@@ -48,7 +48,7 @@
   
 </head>
 
-<body>  
+<body onload="init()">  
 
     <!--====== PRELOADER PART START ======-->
 
@@ -146,7 +146,7 @@
                         <div class="app-logo-box">
                             <a href="#">
                                 
-                                <span class="brand"> B2Web <span> _country_name_ </span> </span>
+                                <span class="brand"> B2WEB <span> _country_name_ </span> </span>
                             </a>
                         </div>
                     </div>
@@ -184,8 +184,11 @@
                     </div>
                     <div class="col-lg-4  col-md-7 col-sm-6 col-6 order-2 order-sm-3">
                         <div class="app-btn-box text-right">
-                            <a class="login-btn" data-toggle="modal" data-target="#loginModal" href="#"><i class="fal fa-user"></i> Login</a>
-                            <a data-toggle="modal" data-target="#registerModal" class="main-btn ml-30" href="#">Get Started</a>
+                            <a class="logged-out login-btn" data-toggle="modal" data-target="#loginModal" href="#"><i class="fal fa-user"></i> Login</a>
+                            <a data-toggle="modal" data-target="#registerModal" class="logged-out main-btn ml-30" href="#">Get Started</a>
+                            <a class="logged-in login-btn" href="profile">Profile <i class="fal fa-user"></i> </a>
+                            <a class="logged-in login-btn" onclick="logout()" href="javascript:void(0);"> Logout <i class="fal fa-sign-out"></i> </a>
+
                             <div class="toggle-btn ml-30 canvas_open d-lg-none d-block">
                                 <i class="fa fa-bars"></i>
                             </div>
@@ -907,14 +910,14 @@
                             <form action="javascript:void(0);">
                             <h1>Login To Account</h1>
                             <div class="form-group">
-                                <input type="email" name="email" placeholder="E-mail Address">
+                                <input class="login_form" type="email" name="email" placeholder="E-mail Address">
                                 <span class="input-icon"><i class="fa fa-envelope"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="password" name="psw" placeholder="Password">
+                                <input class="login_form" type="password" name="password" placeholder="Password">
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div>      
-                            <button class="login-btn">Login</button>      
+                            <button class="login-btn" onclick="login_user()">Login</button>      
                             <a class="reset-psw" href="#">Forgot your password?</a>
                             <div class="seperator"><b>or</b></div>
                             <p>Sign in with your social media account</p>
@@ -947,30 +950,31 @@
                             <form action="javascript:void(0);">
                             <h1>Register New Account</h1>
                             <div class="form-group">
-                                <input type="text" name="name" placeholder="Full Name">
+                                <input class="signup" type="text" name="name" placeholder="Full Name">
                                 <span class="input-icon"><i class="fa fa-user"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="email" name="email" placeholder="E-mail Address">
+                                <input class="signup" type="email" name="email" placeholder="E-mail Address">
                                 <span class="input-icon"><i class="fa fa-envelope"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="password" name="psw" placeholder="Password">
+                                <input class="signup" type="password" name="password" placeholder="Password">
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div>      
                             <div class="form-group">
-                                <input type="password" name="psw" placeholder="Confirm Password">
+                                <input class="signup" type="password" name="password2" placeholder="Confirm Password">
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div>      
-                            <button class="login-btn">register</button>      
+                            <button class="login-btn" onclick="signup_user()">register</button>      
                         
-                            <div class="seperator"><b>or</b></div>
-                            <p>Sign in with your social media account</p>
+<!--                             <div class="seperator"><b>or</b></div>
+                            <p>Sign in with your social media account</p> -->
                             <!-- Social login buttons -->
-                            <div class="social-icon">
+<!--                             <div class="social-icon">
                                 <button class="go" type="button"><i class="fab fa-google"></i></button>
                                 <button class="fa" type="button"><i class="fab fa-facebook"></i></button>
-                            </div>
+                            </div> -->
+                            
                             </form>
                         </div>
                 </div>
@@ -1084,19 +1088,19 @@
                             <form action="javascript:void(0);">
                             <h1>Contact Us</h1>
                             <div class="form-group">
-                                <input type="text" name="name" placeholder="Name">
+                                <input class="feedback_form" type="text" name="name" placeholder="Name">
                                 <span class="input-icon"><i class="fa fa-user"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="email" name="email" placeholder="E-mail Address">
+                                <input class="feedback_form" type="email" name="email" placeholder="E-mail Address">
                                 <span class="input-icon"><i class="fa fa-envelope"></i></span>
                             </div>
                             <div class="form-group">
-                                <textarea class="form-control" type="txet" rows="5" name="message" placeholder="Your message"></textarea>
+                                <textarea class="form-control feedback_form" type="text" rows="5" name="message" placeholder="Your message"></textarea>
                                 
                             </div>
                                 
-                            <button class="login-btn">Submit</button>      
+                            <button class="login-btn" onclick="send_feedback()">Submit</button>      
                             
                             </form>
                         </div>
@@ -1147,14 +1151,12 @@
                 </div>
                 <div class="modal-body">
                     <div id="disclaimer_content">
-                        <ul>
-                            <li>Results displayed to the website user are generated using an Artificial Intelligence algorithm. Due to the significant variability in websites’ contents and the nature of the algorithm, not all results are therefore accurate. KMatters TM does not guarantee the relevance of the results to the industry category selected.</li>
-                            <li>Although KMatters TM runs its algorithm regularly, results and external website contents may change by their owners after the most recent run. Accordingly, the external website content may not match with categories selected.</li>
-                            <li>The list of industry categories may not include all categories of interest to the user. The list is being updated regularly.</li>
-                            <li>Users can report any irrelevant results or missing information to b2web@kmatters.com</li>
-                            <li>KMatters TM does not warrant that its website is free from harmful code, computer viruses or other defects.</li>
-                            <li>KMatters TM is not liable for any losses (including any loss of revenue or profits, loss of data, any penalties or fines imposed by a regulator and any loss that is indirect loss) that you suffer or for any costs, damages, expenses, loss or charges that you incur as a result of accessing KMatters TM or B2WEBTM websites or any websites linked to them.</li>
-                        </ul>
+                        &bull;  Results displayed to the website user are generated using an Artificial Intelligence algorithm. Due to the significant variability in websites’ contents and the nature of the algorithm, not all results are therefore accurate. KMatters TM does not guarantee the relevance of the results to the industry category selected.<br>
+                        &bull;  Although KMatters TM runs its algorithm regularly, results and external website contents may change by their owners after the most recent run. Accordingly, the external website content may not match with categories selected.
+                        &bull;  The list of industry categories may not include all categories of interest to the user. The list is being updated regularly. <br>
+                        &bull;  Users can report any irrelevant results or missing information to b2web@kmatters.com <br>
+                        &bull;  KMatters TM does not warrant that its website is free from harmful code, computer viruses or other defects.<br>
+                        &bull;  KMatters TM is not liable for any losses (including any loss of revenue or profits, loss of data, any penalties or fines imposed by a regulator and any loss that is indirect loss) that you suffer or for any costs, damages, expenses, loss or charges that you incur as a result of accessing KMatters TM or B2WEBTM websites or any websites linked to them.
                         
 
 

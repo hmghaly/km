@@ -1,0 +1,4 @@
+<h3 class="title"> About B2WEB </h3>
+B2WEB is the first and largest AI-powered Business directory at web-scale. It is based on an innovative classification system, IndustryMap™.
+IndustryMap™ is created as an intuitive system to address both human needs and business needs, with the AI implementation in mind.
+The goal of B2WEB is to create a reliable digital hub which enables B2B visibility. In this hub users can find websites of local providers within specific industries, and they can also find potential buyers for their own products or services. The unique B2B industry classification and AI technology enable faster access to commercial and non-commercial (such as government and NFP) websites of organisations within specific industry categories
