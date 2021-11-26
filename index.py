@@ -1,6 +1,16 @@
 import os, time, json, re, sys, math
+import datetime
 from cgi import parse_qs
 import traceback
+import hashlib
+#import Cookie
+import smtplib #email libraries
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import make_msgid
+from smtplib import SMTP_SSL as SMTP
+
+
 from sqlitedict import SqliteDict #Make sure to install it 
 from lxml import html #Make sure to install it 
 from bs4 import BeautifulSoup #Make sure to install it 
@@ -12,6 +22,7 @@ from bs4 import BeautifulSoup #Make sure to install it
 #structure_dict parent_list child_dict id_dict description_dict recursive_child_dict cat_list keyword_dict
 #country_version_dict country_name_dict
 #b2web_model vector_dict
+#userid 
 
 sys.path.insert(0, os.path.dirname(__file__))
 km_utils_dir='/home/sod9mlnmvhfv/km_code/utils'
@@ -22,14 +33,22 @@ from extraction_utils import *
 from h5py_utils import *
 # from classification_utils import *
 
+#admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com","ahmed.ghaly01@gmail.com"]
+admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com"]
+
 
 country_version_dict={} #specifying where is the working version for the AI data for each language
-country_version_dict["au"]="oct21"
-country_version_dict["nz"]="oct21"
+#country_version_dict["au"]="oct21"
+#country_version_dict["nz"]="oct21"
+
+country_version_dict["au"]="nov21"
+country_version_dict["nz"]="nov21"
+country_version_dict["my"]="nov21"
 
 country_name_dict={} #Getting the country name from the country code
 country_name_dict["au"]="Australia"
 country_name_dict["nz"]="New Zealand"
+country_name_dict["my"]="Malaysia"
 
 error="No error"
 trace="No trace"
@@ -60,24 +79,24 @@ def create_selection_options(list_vals_labels): # create selection drop down fro
         cur_op_tag='<option value="%s">%s</option>'%(val0,label0)
         cur_dropdown_content+=cur_op_tag
     return cur_dropdown_content 
-# def get_stdin():
-#     try: 
-#         stdin_str=sys.stdin.read()
-#         stdin_dict=json.loads(stdin_str)
-#     except:  stdin_dict={}
-#     return stdin_dict
+
 
 # sys.path.insert(km_code_dir)
 cwd=os.getcwd()
 cwd=km_utils_dir
 
 #Interface template directory
-version_name="ui2"
+version_name="ui3"
 interface_dir="../b2web_ui"
 dir_path=os.path.join(interface_dir,version_name)
 
+
+
 #Data directory
-km_data_dir='/home/sod9mlnmvhfv/km_data'
+#km_data_dir='/home/sod9mlnmvhfv/km_data'
+root_dir='/home/sod9mlnmvhfv/km_data'
+km_data_dir='/home/sod9mlnmvhfv/km_data/main'
+logs_dir='/home/sod9mlnmvhfv/km_data/logs'
 
 #classification structure - json file
 txt_dir="../txt"
@@ -117,6 +136,109 @@ for cat0,keywords0 in keyword_dict.items():
 # except Exception as e:
 #   error=str(e)
 #   trace=traceback.format_exc() results_retrieval(cat, start_i, country,data_version,domain,n_results_per_page,km_data_dir,recursive_child_dict)
+def log_something(environ0,log_fpath0,log_content_dict0={}):
+    user_ip=environ0.get("REMOTE_ADDR","IP")
+    cur_log_dict=dict(log_content_dict0)
+    cur_log_dict["IP"]=user_ip
+    now = datetime.datetime.now()
+    cur_log_dict["time"]=(now.year, now.month, now.day, now.hour, now.minute, now.second)
+    log_dir0,log_fname0=os.path.split(log_fpath0)
+    if not os.path.exists(log_dir0): os.makedirs(log_dir0)
+    log_fopen0=open(log_fpath0,"a")
+    log_fopen0.write(json.dumps(cur_log_dict)+"\n")
+    log_fopen0.close()
+    return True
+
+def hash_password(pwd0):
+    pwd0=pwd0.encode('utf-8')
+    return hashlib.sha256(pwd0).hexdigest()
+#Email Settings
+#email_from="noreply@kmatters.com"
+
+
+#email_from = "B2WEB Team <noreply@kmatters.com>"
+email_from = "B2WEB Team <contact@kmatters.com>"
+#email_password="vR};4Ix0*K4o"
+email_password="UylWJ!VKZ-A$"
+server_name="mail.kmatters.com"
+port=587 #465
+
+
+def send_email(email_to0,email_subject0,email_html0,email_from0="contact@kmatters.com",email_password0="UylWJ!VKZ-A$", from_name0="B2WEB Team",server_name0="a2plcpnl0342.prod.iad2.secureserver.net",port0=465):
+    server = SMTP(server_name0)
+    server.set_debuglevel(False)
+    server.login(email_from0, email_password0)
+    # Create message container - the correct MIME type is multipart/alternative.
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = email_subject0 #"Registration Successful!"
+    email_from_full = "%s <%s>"%(from_name0,email_from0)
+    msg['From'] = email_from_full
+    msg['To'] = email_to0
+    msg['Message-ID'] = make_msgid()
+
+    email_txt0=email_html0.replace("<br>","\n")
+
+    # Record the MIME types of both parts - text/plain and text/html.
+    part1 = MIMEText(email_txt0, 'plain')
+    part2 = MIMEText(email_html0, 'html')
+
+    # Attach parts into message container.
+    # According to RFC 2046, the last part of a multipart message, in this case
+    # the HTML message, is best and preferred.
+    msg.attach(part1)
+    msg.attach(part2)
+
+    # Send the message via local SMTP server.
+    #s = smtplib.SMTP('localhost')
+    # sendmail function takes 3 arguments: sender's address, recipient's address
+    # and message to send - here it is sent as one string.
+    server.sendmail(email_from0, email_to0, msg.as_string())
+    server.quit()  
+    return str(msg)
+# def send_email(email_to,email_subject,email_html_fpath,email_html_content="",email_from="contact@kmatters.com",from_name="B2WEB Team",email_password="UylWJ!VKZ-A$",server_name="mail.kmatters.com",port=587):
+
+#     if email_html_fpath!="":
+#         email_html_template_fopen=open(email_html_fpath)
+#         email_html=email_html_template_fopen.read()
+#         email_html_template_fopen.close()
+#     if email_html_content!="":  
+#         email_html=email_html_content
+
+
+#     server = smtplib.SMTP(server_name, port)
+#     server.login(email_from, email_password)
+
+#     if type(email_to) is list: email_to=", ".join(email_to)
+
+#     # Create message container - the correct MIME type is multipart/alternative.
+#     msg = MIMEMultipart('alternative')
+#     msg['Subject'] = email_subject #"Registration Successful!"
+#     email_from_full = "%s <%s>"%(from_name,email_from)
+#     msg['From'] = email_from_full
+#     msg['To'] = email_to
+#     msg['Message-ID'] = make_msgid()
+
+#     email_txt=email_html.replace("<br>","\n")
+
+#     # Record the MIME types of both parts - text/plain and text/html.
+#     part1 = MIMEText(email_txt, 'plain')
+#     part2 = MIMEText(email_html, 'html')
+
+#     # Attach parts into message container.
+#     # According to RFC 2046, the last part of a multipart message, in this case
+#     # the HTML message, is best and preferred.
+#     msg.attach(part1)
+#     msg.attach(part2)
+
+#     # Send the message via local SMTP server.
+#     #s = smtplib.SMTP('localhost')
+#     # sendmail function takes 3 arguments: sender's address, recipient's address
+#     # and message to send - here it is sent as one string.
+#     server.sendmail(email_from, email_to, msg.as_string())
+#     server.quit()
+#     return str(msg)
+
+
 def gen_pagination(start_i,n_results_per_page,n_full):
     displayed_pages=[]
     if n_full==0: return displayed_pages
@@ -192,6 +314,9 @@ class results_retrieval:
             total_manual_results+=tmp_n_results
             total_n_results+=tmp_n_results
             if tmp_n_results>0: list_manual_fpaths.append(manual_cat_fpath)
+        self.list_manual_fpaths=list_manual_fpaths
+        self.list_cat_ids=list_cat_ids
+        self.cat_size_dict=cat_size_dict #cat_size_dict list_cat_ids
 
         for cat_id0 in list_cat_ids: #then AI results
             cat_fpath=os.path.join(ai_dir,cat_id0+".txt")
@@ -209,6 +334,7 @@ class results_retrieval:
         self.n_ai=num_ai_results_displayed
         self.n_manual=total_manual_results
         self.n_full=full_n_results_displayed
+        self.manual_dir=manual_dir
 
         # cat_size_dict["manual"]=total_manual_results
         # cat_size_dict["all"]=total_n_results
@@ -227,6 +353,7 @@ class results_retrieval:
                 fopen0.close()
             all_manual.sort()
             self.cur_results.extend(all_manual[start_i:start_i+n_results_per_page])
+        self.all_manual=all_manual
         if len(self.cur_results)<n_results_per_page:
             new_start_i=max(0,start_i-len(self.cur_results)) # @start_i=0 > new_start_i=0, start_i=10 > new_start_i=7, start_i=20, new= 17
             remaining_n_results=n_results_per_page-len(self.cur_results)
@@ -247,6 +374,7 @@ class results_retrieval:
 
 def app(environ, start_response):
     #start_response('200 OK', [('Content-Type', 'text/plain')])
+    start_time=time.time()
     start_response('200 OK', [('Content-Type', 'text/html')])
     # message = 'It works!\n'
     # version = 'Python v' + sys.version.split()[0] + '\n'
@@ -267,6 +395,8 @@ def app(environ, start_response):
     data_version=country_version_dict[country]
     country_name=country_name_dict[country]
 
+
+
     #posted data - data received through POST method
     posted_data=""
     posted_data_dict={}
@@ -274,12 +404,37 @@ def app(environ, start_response):
         posted_data=environ['wsgi.input'].read().decode("utf-8")
         posted_data_dict=json.loads(posted_data)
 
+    #Cookie data
+    #cookie_str=environ["HTTP_COOKIE"] 
+    cookie_str=environ.get("HTTP_COOKIE","")
+    #parsed_cookie = Cookie.SimpleCookie(cookie_str)
+
+    cookie_split=cookie_str.split(";")
+    cookie_dict={}
+    # for cookie in parsed_cookie.values():
+    #     cookie_dict[cookie.key] = cookie.coded_value 
+    for sp in cookie_split:
+        key_val=sp.split("=")
+        if len(key_val)!=2: continue
+        key,val=key_val
+        key,val=key.strip(),val.strip()
+        cookie_dict[key]=val
+    userid=cookie_dict.get("userid","")
+    #userid=str(cookie_split)
+
+
+
+
     #Get list of cities in the current country
     locations_fpath=os.path.join(txt_dir,"locations",country+".json")
-    locations_fopen=open(locations_fpath)
-    locations_obj=json.load(locations_fopen)
-    locations_fopen.close()
-    city_list=locations_obj["city_list"]
+    city_list=[]
+    if os.path.exists(locations_fpath):
+        locations_fopen=open(locations_fpath)
+        locations_obj=json.load(locations_fopen)
+        locations_fopen.close()
+        city_list=locations_obj["city_list"]
+
+
 
 
 
@@ -289,6 +444,9 @@ def app(environ, start_response):
     script_split=script_url.split("/")
     if len(script_split)==1: script_name="intro"
     else: script_name=script_split[-1]
+
+
+
 
     #page_content="<html><body><h1>Hello World 12345</h1> </body></html>"
     if script_name=="index":
@@ -360,167 +518,6 @@ def app(environ, start_response):
           page_content="<html><body><h1>Test Page</h1> Error: %s <br> Trace: %s </body></html>"%(error,trace)        
         #page_content=page_obj.update_replace(repl_dict,"our new title","and a description as well")        
 
-    elif script_name=="category_old":
-        cur_fpath=os.path.join(dir_path,"category.html")
-        page_content=read_file(cur_fpath)
-        page_content=page_content.replace("_country_code_",country)
-        page_content=page_content.replace("_country_name_",country_name)
-        page_content=page_content.replace("_com_link_","category?country=%s&domain=com&cat=%s"%(country,cat))
-        page_content=page_content.replace("_gov_link_","category?country=%s&domain=gov&cat=%s"%(country,cat))
-        page_content=page_content.replace("_edu_link_","category?country=%s&domain=edu&cat=%s"%(country,cat))
-        page_content=page_content.replace("_org_link_","category?country=%s&domain=org&cat=%s"%(country,cat))
-        
-        
-
-        ai_dir=os.path.join(km_data_dir,country,data_version,domain)
-        manual_dir=os.path.join(km_data_dir,country,"manual",domain)
-        sponsored_dir=os.path.join(km_data_dir,country,"sponsored",domain)
-        cat_fpath=os.path.join(ai_dir,cat+".txt")
-        #cat_fpath=os.path.join(manual_dir,cat+".txt")
-        manual_cat_fpath=os.path.join(manual_dir,cat+".txt")
-        info_dict_path=os.path.join(km_data_dir,country,"info_dict.sqlite")
-
-        repl_dict1={}
-        
-        cat_name=id_dict.get(cat,cat) #First get cat name and descriptions
-        cat_description=description_dict.get(cat, cat_name)
-        repl_dict1["cat_name"]=cat_name
-        repl_dict1["cat_description"]=cat_description +" in %s"%country_name
-
-        domains=["com","gov","edu","org"] #then get the number of results per domain
-        domain_count_dict={}
-        for dom0 in domains:
-            cur_domain_fpath=os.path.join(km_data_dir,country,data_version,dom0,cat+".txt")
-            domain_num_lines=get_file_n_lines(cur_domain_fpath)
-            domain_count_dict[dom0]=domain_num_lines
-            repl_key=dom0+"_category_count"
-            repl_dict1[repl_key]="(%s)"%domain_num_lines
-            
-
-        t0=time.time() # Start running the actual query
-        mydict = SqliteDict(info_dict_path, autocommit=True)
-        
-        num_lines=get_file_n_lines(cat_fpath)
-        m_lines=get_multiple_lines(start_i,n_results_per_page,cat_fpath)
-
-        results_list=[]
-        for line_item in m_lines:
-            out=mydict.get(line_item)
-            results_list.append(out)
-        t1=time.time()
-        elapsed=t1-t0
-
-
-        results_content=""
-        for item in results_list:
-            local_dict=json.loads(item)
-            cur_url=local_dict.get("url","")
-            cur_title=local_dict.get("title",cur_url)
-            #cur_url='<a href="%s" target="new">%s</a>'%(local_dict.get("url",""),local_dict.get("url",""))
-            top_words_list=local_dict.get("top_words",[])
-
-            preds_list=local_dict.get("top_preds",[])
-            preds_dict=dict(iter([v[:2] for v in preds_list]))
-            cur_score=preds_dict.get(cat,0)
-
-            keywords_str="<b>Keywords:</b> "+" ".join(top_words_list)
-            keywords_str+="- <b>score</b>: %s"%cur_score #temporary
-
-            cur_description=local_dict.get("description",keywords_str)
-
-            #cur_description=str(local_dict.get("top_preds",[]))
-            #cur_description=str(list(local_dict.keys()))
-            #cur_description=str(preds_dict)
-            cur_template='<blockquote><p><a href="_url_" target="new"> _title_ </a></p><cite>_description_</cite></blockquote>'
-            cur_template_copy=cur_template.replace("_url_",cur_url).replace("_title_",cur_title).replace("_description_",cur_description)
-            results_content+=cur_template_copy+"\n"
-        repl_dict1["result_list"]=results_content #id_dict description_dict child_dict
-
-        pagination_content=""
-        link_template="category?country=%s&domain=%s&cat=%s&start_i=_s_i_"%(country,domain,cat)
-        #link_template_copy=link_template.replace("_s_i_","20")
-        #pagination_content+='<a href="%s">02</a>'%link_template_copy
-
-        #let's make a distinction between i, the index of an individual result in the results file
-        #and j, the index of the page
-        #we should
-        cur_page_j=int(start_i/n_results_per_page)+1 #if start_i is 20, then we're talking about page 3 (p1: 0, p2: 10, p3: 20)
-        n_pages=math.ceil(num_lines/n_results_per_page) #the actual number of result pages is the number of lines of the cat file/n_results per page
-        last_page_i=n_results_per_page*(n_pages-1) #the start_i value for the last page
-        next_page_j=cur_page_j+1
-        prev_page_j=cur_page_j-1
-
-        used_js=[]
-        for j0 in range(3): #initial pagination, for first three pages
-            tmp_page_j=j0+1
-            tmp_start_i=j0*n_results_per_page #if j0=0 : start_i=0, 
-            if tmp_start_i>num_lines: continue
-            used_js.append(j0)
-            if tmp_page_j==cur_page_j: 
-                pagination_content+='<span class="current">%s</span>'%tmp_page_j
-            else: 
-                link_template_copy=link_template.replace("_s_i_",str(tmp_start_i))
-                pagination_content+='<a href="%s">%s</a>'%(link_template_copy,tmp_page_j)
-        
-        if cur_page_j>4: pagination_content+="..." #now doing middle pagination
-        for j0 in [prev_page_j,cur_page_j,next_page_j]:
-            if j0<3: continue
-            tmp_page_j=j0+1
-            #tmp_start_i=j0*n_results_per_page #if j0=0 : start_i=0, 
-            tmp_start_i=n_results_per_page*(tmp_page_j-1)
-            if tmp_start_i>num_lines: continue
-            if tmp_page_j==n_pages: continue
-            used_js.append(j0)
-            if tmp_page_j==cur_page_j: 
-                pagination_content+='<span class="current">%s</span>'%tmp_page_j
-            else: 
-                link_template_copy=link_template.replace("_s_i_",str(tmp_start_i))
-                pagination_content+='<a href="%s">%s</a>'%(link_template_copy,tmp_page_j)
-
-        if cur_page_j==n_pages and not prev_page_j in used_js:
-            #tmp_start_i=prev_page_j*n_results_per_page
-            tmp_start_i=n_results_per_page*(prev_page_j-1)
-
-            link_template_copy=link_template.replace("_s_i_",str(tmp_start_i))
-            pagination_content+='<a href="%s">%s</a>'%(link_template_copy,prev_page_j)
-
-
-        if not n_pages in used_js: #now doing the last page
-            if n_pages>next_page_j+2: pagination_content+="..."
-            tmp_page_j=n_pages
-            #tmp_start_i=tmp_page_j*n_results_per_page
-            if tmp_page_j==cur_page_j: 
-                pagination_content+='<span class="current">%s</span>'%tmp_page_j
-            else: 
-                link_template_copy=link_template.replace("_s_i_",str(last_page_i))
-                pagination_content+='<a href="%s">%s</a>'%(link_template_copy,tmp_page_j)
-
-
-
-
-            
-        repl_dict1["pagination"]=pagination_content
-
-
-
-
-
-        page_content=soup_replace_by_ids(page_content,repl_dict1)
-
-        #Updating the dropdown for category select
-        repl_dict2={}
-        cat_select_id='category_select_dropdown'
-        cur_dropdown_list=[["","Business Category"]]+[(v[1],v[0]) for v in cat_list]
-        repl_dict2[cat_select_id]=create_selection_options(cur_dropdown_list)
-        location_select_id='location_select_dropdown'
-        cur_dropdown_list=[["","Nearest City"]]+[(v,v) for v in city_list]
-        repl_dict2[location_select_id]=create_selection_options(cur_dropdown_list)
-
-        page_content=soup_replace_by_ids(page_content,repl_dict2)
-        #category_select_dropdown
-
-
-        # fname="test.html"
         
 
 
@@ -611,6 +608,17 @@ def app(environ, start_response):
         cat_res_dict["n_manual"]=res_obj.n_manual
         cat_res_dict["query_time"]=res_obj.query_time
         cat_res_dict["test-cat"]=test
+        cat_res_dict["all_manual"]=res_obj.all_manual
+        cat_res_dict["manual_dir"]=res_obj.manual_dir
+        cat_res_dict["list_manual_fpaths"]=res_obj.list_manual_fpaths
+        cat_res_dict["cat_size_dict"]=res_obj.cat_size_dict
+        cat_res_dict["list_cat_ids"]=res_obj.list_cat_ids
+
+        #cat_size_dict list_cat_ids
+
+        
+        
+        
         pagination1=gen_pagination(start_i,n_results_per_page,res_obj.n_full)
         cat_res_dict["pagination"]=pagination1
 
@@ -642,8 +650,11 @@ def app(environ, start_response):
             link_href="category?country=%s&cat=%s"%(country,child_cat_id)
             cur_link='<a href="%s"> %s </a>'%(link_href,child_cat_name)
             child_link_list.append(cur_link)
+        subcategory_content=""
+        if child_link_list: subcategory_content+="Websites shown below reflect all of the following subcategories. Click on each subcategory for more focused results.<br>"
+        subcategory_content+=" - ".join(child_link_list)
 
-        repl_dict1["cat_children"]=" - ".join(child_link_list) #str(cur_children)
+        repl_dict1["cat_children"]= subcategory_content#" - ".join(child_link_list) #str(cur_children)
         #cat_children      
 
         #Now getting the actual results
@@ -653,6 +664,9 @@ def app(environ, start_response):
         cat_res_dict["cur_results"]=res_obj.cur_results
         cat_res_dict["n_full"]=res_obj.n_full
         cat_res_dict["n_manual"]=res_obj.n_manual
+
+        cur_page_j=int(start_i/n_results_per_page)+1
+
         #cat_res_dict["query_time"]=res_obj.query_time
         # cat_res_dict["test-cat"]=test
         pagination1=gen_pagination(start_i,n_results_per_page,res_obj.n_full)
@@ -668,13 +682,21 @@ def app(environ, start_response):
         elapsed=t1-t0
 
         #Now we start populating the results content in the results section
+        user_allowed=True #check if the user is allowed to view results
+        if userid=="" and cur_page_j>3: 
+            user_allowed=False
+            pagination1=gen_pagination(0,n_results_per_page,res_obj.n_full)
+
 
 
         results_content=""
         for item in results_list:
+            if not user_allowed: continue
             local_dict=json.loads(item)
             cur_url=local_dict.get("url","")
-            cur_title=local_dict.get("title",cur_url)
+            found_title=local_dict.get("title",cur_url)
+            cur_title=cur_url
+            cur_title=cur_title.replace("http://","").replace("https://","")
             #cur_url='<a href="%s" target="new">%s</a>'%(local_dict.get("url",""),local_dict.get("url",""))
             top_words_list=local_dict.get("top_words",[])
 
@@ -683,13 +705,18 @@ def app(environ, start_response):
             cur_score=preds_dict.get(cat,0)
 
             keywords_str="<b>Keywords:</b> "+" ".join(top_words_list)
-            keywords_str+="- <b>score</b>: %s"%cur_score #temporary
+            #keywords_str+="- <b>score</b>: %s"%cur_score #temporary
 
-            cur_description=local_dict.get("description",keywords_str)
+            cur_description=local_dict.get("description","")
+            if found_title: cur_description=found_title+" - "+ cur_description
+            if len(cur_description.strip())<30: cur_description=keywords_str
+
 
             cur_template='<blockquote><p><a href="_url_" target="new"> _title_ </a></p><cite>_description_</cite></blockquote>'
             cur_template_copy=cur_template.replace("_url_",cur_url).replace("_title_",cur_title).replace("_description_",cur_description)
             results_content+=cur_template_copy+"\n"
+
+        if not user_allowed: results_content="Please Login to view more results."
         repl_dict1["result_list"]=results_content #id_dict description_dict child_dict
 
         #Now doing the pagination
@@ -729,12 +756,12 @@ def app(environ, start_response):
 
         page_content=soup_replace_by_ids(page_content,repl_dict2)
 
-    elif script_name=="w2v":
-        query_word="glass"
-        query_word=qs_dict.get("word",[query_word])[0]
-        try: similar=b2web_model.wv.most_similar(query_word)
-        except: similar=[]
-        page_content=str(similar)
+    # elif script_name=="w2v":
+    #     query_word="glass"
+    #     query_word=qs_dict.get("word",[query_word])[0]
+    #     try: similar=b2web_model.wv.most_similar(query_word)
+    #     except: similar=[]
+    #     page_content=str(similar)
 
     elif script_name=="cat_vec":
         #vector_dict tmp_vec0,tmp_wd_vec_dict=get_words_vector(keywords0,b2web_model,excluded_words=[])
@@ -764,7 +791,7 @@ def app(environ, start_response):
         tmp_cat_list.sort(key=lambda x:-x[-1])
         # tmp_content="You searched for: %s <br>"%str(query_words)
         # for a0,b0 in tmp_cat_list[:10]:
-        # 	tmp_content+="<b>%s</b>: %s<br>"%(a0,round(b0,3))
+        #   tmp_content+="<b>%s</b>: %s<br>"%(a0,round(b0,3))
 
         json_content=json.dumps(tmp_cat_list[:10])
 
@@ -774,9 +801,222 @@ def app(environ, start_response):
         # try: similar=b2web_model.wv.most_similar(query_word)
         # except: similar=[]
         page_content=json_content#tmp_content #str(tmp_cat_list)
+        searches_dir=os.path.join(root_dir,"searches")
+        if not os.path.exists(searches_dir): os.makedirs(searches_dir)
+        searches_log_path=os.path.join(searches_dir,"searches_log.txt")
+
+        log_something(environ,searches_log_path,{"query":query})
+
+        #signup_user
+    elif script_name=="signup_user":
+        output={}
+        output["message"]="success"
+        output["success"]=True        
+        #posted_email=posted_data_dict.get("email")
+        signup_password=posted_data_dict.get("password","")
+        signup_email=posted_data_dict.get("email","")
+        signup_name=posted_data_dict.get("name","User")
+        signup_password=str(signup_password).strip()
+        signup_email=str(signup_email).strip()
+        hashed_password=""
+        if signup_password=="" or signup_email=="":
+            output["message"]="No email or no password"
+            output["success"]=False
+        else:
+            hashed_password=hash_password(signup_password)
+
+        #if email is found  
+        user_dir=os.path.join(root_dir,"users")
+        if not os.path.exists(user_dir): os.makedirs(user_dir)
+        user_dict_path=os.path.join(user_dir,"user_dict.sqlite")
+        user_log_path=os.path.join(user_dir,"user_log.txt")
+
+        user_dict = SqliteDict(user_dict_path, autocommit=True)
+        check_user_entry=user_dict.get(signup_email) 
+        if check_user_entry!=None:
+            output["message"]="User with the same email already exists"
+            output["success"]=False            
+
+
+
+        if output["success"]:
+            posted_data_dict.pop("password",None)
+            posted_data_dict.pop("password2",None)
+            posted_data_dict["hashed_password"]=hashed_password
+            now = datetime.datetime.now()
+            posted_data_dict["time"]=(now.year, now.month, now.day, now.hour, now.minute, now.second)
+            user_dict[signup_email]=json.dumps(posted_data_dict)
+            log_something(environ,user_log_path,posted_data_dict)
+            email_subject1="Welcome to B2WEB"
+            email_content1="""
+            Hello %s,<br>Welcome to B2WEB, the first AI-powered webscale business directory. <br>
+
+            Please verify your email by clicking on this link: <a href="http://kmatters.com/b2web/verify?email=%s">Verify Email</a><br>
+
+            Visit our website any time: <a href="http://kmatters.com/b2web">B2WEB Directory</a> <br>
+            Make sure to bookmark the website to easier future access. <br>
+
+            For any questions, please email us at b2web@kmatters.com <br>
+
+            Best Regards,<br>
+            KMatters B2WEB Team
+            """%(signup_name,signup_email)
+
+            send_email(signup_email,email_subject1,email_content1)
+
+        
+        user_dict.close()
+
+        output["email"]=signup_email
+        page_content=json.dumps(output)#str(recursive_child_dict)#+"<br><br>"+str(child_dict)
+
+    elif script_name=="login_user":
+        output={}
+      
+        #posted_email=posted_data_dict.get("email")
+        login_password=posted_data_dict.get("password")
+        login_email=posted_data_dict.get("email")
+
+        # login_email="cc@cc.cc"
+        # login_password="123"
+        login_password=str(login_password).strip()
+        login_email=str(login_email).strip()
+
+        hashed_login_password=hash_password(login_password)
+
+        #login_email="hmghaly@gmail.com"
+
+        # output["login_email"]=login_email
+        # output["login_password"]=login_password
+        # output["hashed_login_password"]=hashed_login_password
+
+        output["email"]=login_email
+
+
+
+        user_dir=os.path.join(root_dir,"users")
+        if not os.path.exists(user_dir): os.makedirs(user_dir)
+        user_dict_path=os.path.join(user_dir,"user_dict.sqlite")
+        login_log_path=os.path.join(user_dir,"login_log.txt")
+
+        user_dict = SqliteDict(user_dict_path, autocommit=True)
+        check_user_entry=user_dict.get(login_email,"{}")
+        check_user_entry=json.loads(check_user_entry)
+        output["check_user_entry"]=check_user_entry
+        stored_hashed_password= check_user_entry.get("hashed_password") 
+        # stored_password= check_user_entry.get("password") 
+        # test_hash_stored=hash_password(stored_password)
+        # output["test_hash_stored"]=test_hash_stored
+
+        if stored_hashed_password==hashed_login_password:
+            output["message"]="success"
+            output["success"]=True   
+            log_something(environ,login_log_path,{"email":login_email})
+        else:
+            output["message"]="Invalid Username or Password"
+            output["success"]=False
+        user_dict.close()                      
+
+        page_content=json.dumps(output)
+
+    elif script_name=="send_feedback":
+        output={}
+        feedback_email=posted_data_dict.get("email")
+        feedback_name=posted_data_dict.get("name")
+        feedback_message=posted_data_dict.get("message")
+
+        output["message"]="success"
+        output["success"]=True   
+        output["name"]=feedback_name   
+        output["email"]=feedback_email
+        feedback_dir=os.path.join(root_dir,"feedback")
+        if not os.path.exists(feedback_dir): os.makedirs(feedback_dir)
+        feedback_log_path=os.path.join(feedback_dir,"feedback_log.txt")
+        log_something(environ,feedback_log_path,posted_data_dict)
+
+        email_subject1="Feedback from user %s - %s"%(feedback_name,feedback_email)
+        recepients=admin_emails+[feedback_email]
+        email_content1="""
+        This is a notification that we received the following feedback from user: %s - %s <br>
+        <b>Message:</b>: <br>====<br> %s <br>====<br>
+        Best Regards, <br> B2WEB Team
+
+        """%(feedback_name,feedback_email,feedback_message)
+
+        sent_msg=send_email("kmatters.b2web@gmail.com",email_subject1,email_content1)
+        sent_msg=send_email(feedback_email,email_subject1,email_content1)
+        output["sent_msg"]=sent_msg
+        #admin_emails
+
+
+        page_content=json.dumps(output)
+
+    elif script_name=="send_email":
+        #vR};4Ix0*K4o noreply@kmatters.com a2plcpnl0342.prod.iad2.secureserver.net 465
+        email_to1="champolu.game@gmail.com"
+        email_subject1="Testing"
+        email_html_content1="Testing Email Function - from KMatters"
+        message="Hello"
+        #send_email(email_to1,email_subject1,"",email_html_content1,email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="mail.kmatters.com",port=25)
+        send_email(email_to1,email_subject1,"",email_html_content1,email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="a2plcpnl0342.prod.iad2.secureserver.net",port=465)
+
+        # try:
+        #     send_email(email_to1,email_subject1,email_html_content1,email_html_content="",email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="mail.kmatters.com",port=25):
+        #     message="Sent Successfully"
+        # except Exception as e:
+        #     error=str(e)
+        #     trace=traceback.format_exc()
+        #     message= "%s - %s"%(error,trace)
+
+
+
+
+        page_content=message #"email sent" #str(recursive_child_dict)#+"<br><br>"+str(child_dict)
 
     elif script_name=="json":
         page_content=str(recursive_child_dict)#+"<br><br>"+str(child_dict)
+
+    elif script_name=="environ":
+        page_content=str(environ)#+"<br><br>"+str(child_dict)
+
+    elif script_name=="logging":
+        user_ip=environ.get("REMOTE_ADDR","IP")
+        cur_log_dict=dict(posted_data_dict)
+        cur_log_dict["IP"]=user_ip
+        now = datetime.datetime.now()
+        cur_log_dict["time"]=(now.year, now.month, now.day, now.hour, now.minute, now.second)
+        log_fname="%s-%s-%s.txt"%(now.year, now.month, now.day)
+        log_dir=os.path.join(km_data_dir,"logs")
+        if not os.path.exists(log_dir): os.makedirs(log_dir)
+
+# except Exception as e:
+#   error=str(e)
+#   trace=traceback.format_exc() results_retrieval(cat, start_i, country,data_version,domain,n_results_per_page,km_data_dir,recursive_child_dict)
+
+
+        log_fpath=os.path.join(log_dir,log_fname)
+        #cur_log_dict["path"]=log_fpath
+        outcome={}
+        cur_log_content_dict={"something":123,"also":"what"}
+        error,trace="",""
+        try: success=log_something(environ,log_fpath,cur_log_content_dict)
+        except Exception as e: 
+            error=str(e)
+            trace=traceback.format_exc()
+
+            success=False
+        outcome["success"]=success
+        outcome["trace"]=trace
+        outcome["error"]=error
+
+        #print(now.year, now.month, now.day, now.hour, now.minute, now.second)
+
+        #page_content=str(cur_log_dict)#+"<br><br>"+str(child_dict)
+        #page_content=json.dumps(cur_log_dict)#+"<br><br>"+str(child_dict)
+        page_content=json.dumps(outcome)#+"<br><br>"+str(child_dict)
+        
+
+
     elif script_name=="stdin":
         #page_content=str(std_in)#+"<br><br>"+str(child_dict)
         #cur_stdin_dict=get_stdin()
@@ -854,5 +1094,21 @@ def app(environ, start_response):
 
     page_content=page_content.replace("assets/",dir_path+"/assets/")
     response=page_content
+
+    #Final logging of the request/response
+    end_time=time.time() 
+    elapsed=end_time-start_time
+    tmp_log_dict={} #Now log the current request
+    tmp_log_dict["qs"]=qs_dict
+    tmp_log_dict["posted"]=posted_data_dict
+    tmp_log_dict["script_url"]=script_url
+    tmp_log_dict["duration"]=round(elapsed,5)
+    tmp_log_dict["userid"]=userid
+    
+    now = datetime.datetime.now()
+    log_fname="%s-%s-%s.txt"%(now.year, now.month, now.day)    
+    tmp_log_fpath=os.path.join(logs_dir,log_fname)
+
+    log_something(environ,tmp_log_fpath,tmp_log_dict)
 
     return [response.encode()]
