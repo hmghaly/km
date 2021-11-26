@@ -1,8 +1,10 @@
 import os, time, json, re, sys, math
 import datetime
 from cgi import parse_qs
+from itertools import groupby
 import traceback
 import hashlib
+import requests
 #import Cookie
 import smtplib #email libraries
 from email.mime.multipart import MIMEMultipart
@@ -529,10 +531,28 @@ def app(environ, start_response):
         page_content=read_file(cur_fpath)
     elif script_name=="about":
         cur_fpath=os.path.join(dir_path,"about.html")
-        page_content=read_file(cur_fpath)
+        template_content=read_file(cur_fpath)
+        filler_fpath=os.path.join(dir_path,"about-content.txt")
+        filler_content=read_file(filler_fpath)
+        filler_content=filler_content.replace("\n","<br>")
+        filler_content=filler_content.replace("><br>",">")
+        repl_dict2={"main_content":filler_content}
+        page_content=soup_replace_by_ids(template_content,repl_dict2)
+
+
+        #page_content=read_file(cur_fpath)
     elif script_name=="terms":
-        cur_fpath=os.path.join(dir_path,"terms.html")
-        page_content=read_file(cur_fpath)
+        # cur_fpath=os.path.join(dir_path,"terms.html")
+        # page_content=read_file(cur_fpath)
+        cur_fpath=os.path.join(dir_path,"about.html")
+        template_content=read_file(cur_fpath)
+        filler_fpath=os.path.join(dir_path,"tc-content.txt")
+        filler_content=read_file(filler_fpath)
+        filler_content=filler_content.replace("\n","<br>")
+        filler_content=filler_content.replace("><br>",">")
+        repl_dict2={"main_content":filler_content}
+        page_content=soup_replace_by_ids(template_content,repl_dict2)
+
     elif script_name=="inspect":
 
         #cat="electric-maintenance-contracting-services"
@@ -950,15 +970,79 @@ def app(environ, start_response):
 
 
         page_content=json.dumps(output)
+    elif script_name=="traffic_overview":
+        file_list=os.listdir(logs_dir)
+        file_list.sort()
+        tmp_content="<html><body>"
+        tmp_content+="<h2>Select which day</h2>"
+        for fname in file_list:
+            just_date=fname.split(".")[0]
+            href="traffic?day="+just_date
+            tmp_content+='<a href="%s">%s</a><br>'%(href,just_date)
 
-    elif script_name=="send_email":
-        #vR};4Ix0*K4o noreply@kmatters.com a2plcpnl0342.prod.iad2.secureserver.net 465
-        email_to1="champolu.game@gmail.com"
-        email_subject1="Testing"
-        email_html_content1="Testing Email Function - from KMatters"
-        message="Hello"
-        #send_email(email_to1,email_subject1,"",email_html_content1,email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="mail.kmatters.com",port=25)
-        send_email(email_to1,email_subject1,"",email_html_content1,email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="a2plcpnl0342.prod.iad2.secureserver.net",port=465)
+        tmp_content+="</body></html>"
+        page_content=tmp_content #json.dumps(output)
+
+    elif script_name=="traffic":
+        #output={}
+        #output["title"]="Traffic Dashboard"
+        #logs_dir=os.path.join(root_dir,"logs")
+        day=qs_dict.get("day",[""])[0]
+        #fname="2021-11-25.txt"
+        fname=day+".txt"
+        fpath=os.path.join(logs_dir,fname)
+        cur_list=[]
+        fopen=open(fpath)
+        for line in fopen:
+            line=line.strip()
+            if line=="": continue
+            line_dict=json.loads(line)
+            cur_ip=line_dict.get("IP")
+            cur_time=line_dict.get("time")
+            qs=line_dict.get("qs",{})
+            cat=qs.get("cat",[""])[0]
+            country=qs.get("country",[""])[0]
+            domain=qs.get("domain",[""])[0]
+            start_i=qs.get("start_i",[""])[0]
+            script_url=line_dict.get("script_url")
+
+
+            cur_list.append((cur_ip,cur_time,cat,country,domain,start_i,script_url))
+        cur_list.sort()
+        grouped=[(key,[v[1:] for v in list(group)]) for key,group in groupby(cur_list,lambda x:x[0])]
+        content="<html><body><table>"
+        for ip0,grp in grouped:
+            ip_rquest_url="https://geolocation-db.com/json/%s&position=true"%ip0
+            loc_str='<a href="%s" target="new">Where?</a>'%ip_rquest_url
+            # response = requests.get(ip_rquest_url).json()
+            # country_name=response.get("country_name","")
+            # city_name=response.get("city","")
+            # loc_str="%s, %s"%(city_name,country_name)
+
+
+            content+="<tr><td><h2>%s</h2></td><td>%s</td></tr>"%(ip0,loc_str)
+            for gr in grp:
+                cur_list=list(gr)
+                time_tuple=cur_list[0]
+                time_str="%s/%s/%s - %s:%s:%s"%(time_tuple[0],time_tuple[1],time_tuple[2],time_tuple[3],time_tuple[4],time_tuple[5])
+                cur_list[0]=time_str
+                content+="<tr><td>"+"</td><td>".join([str(c0) for c0 in cur_list])+"</td></tr>"
+        content+="</table></body></html>"
+
+
+        fopen.close()
+        #output["ip_list"]=cur_list
+
+        page_content=content #json.dumps(output)
+
+    # elif script_name=="send_email":
+    #     #vR};4Ix0*K4o noreply@kmatters.com a2plcpnl0342.prod.iad2.secureserver.net 465
+    #     email_to1="champolu.game@gmail.com"
+    #     email_subject1="Testing"
+    #     email_html_content1="Testing Email Function - from KMatters"
+    #     message="Hello"
+    #     #send_email(email_to1,email_subject1,"",email_html_content1,email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="mail.kmatters.com",port=25)
+    #     send_email(email_to1,email_subject1,"",email_html_content1,email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="a2plcpnl0342.prod.iad2.secureserver.net",port=465)
 
         # try:
         #     send_email(email_to1,email_subject1,email_html_content1,email_html_content="",email_from="noreply@kmatters.com",email_password="vR};4Ix0*K4o",server_name="mail.kmatters.com",port=25):
@@ -967,11 +1051,7 @@ def app(environ, start_response):
         #     error=str(e)
         #     trace=traceback.format_exc()
         #     message= "%s - %s"%(error,trace)
-
-
-
-
-        page_content=message #"email sent" #str(recursive_child_dict)#+"<br><br>"+str(child_dict)
+        #page_content=message #"email sent" #str(recursive_child_dict)#+"<br><br>"+str(child_dict)
 
     elif script_name=="json":
         page_content=str(recursive_child_dict)#+"<br><br>"+str(child_dict)
