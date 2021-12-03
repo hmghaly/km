@@ -1,3 +1,34 @@
+function init(){
+	userid=getCookie("userid")
+	if (userid!=""){
+		$('.logged-in').show()
+		$('.logged-out').hide()
+	}
+	else {
+		$('.logged-in').hide()
+		$('.logged-out').show()		
+	}
+
+//submitting result click
+	$(".results_link").on('click', function(event){
+		//event.preventDefault();
+		//alert("Hello!")
+		trg=event.currentTarget
+		console.log(trg)
+		tmp_dict=parse_qs()
+		tmp_dict["href"]=trg.href
+		tmp_dict["id"]=trg.id
+		console.log(tmp_dict)
+		post_data("send_click",tmp_dict,function(obj1){
+			console.log(obj1)
+		})
+
+	    // event.current;
+	    // event.stopImmediatePropagation();
+	    //(... rest of your JS code)
+	});	
+}
+
 //managing websites
 function submit_website(){
 	//ading a business website - with its url- category - country, and corresponding info: description, location(s)
@@ -29,12 +60,70 @@ function sponsor_website(){
 
 
 //login-signup functions
-function email_signup_user(){
+function signup_user(){
 	//get info from signup form, and upload it to server, and save the email in local storage
+	cur_qs_dict=parse_qs()
+	form_vals_dict=get_vals("signup")
+	form_vals_dict["country"]=cur_qs_dict["country"]
+	form_vals_dict["method"]="email"
+	//form_vals_dict["user_email"]="test@test.com"//get from local storage - can be different from contact email
+	console.log(form_vals_dict)
+	if (form_vals_dict.name==null || form_vals_dict.name==undefined || form_vals_dict.name==""){alert("Please enter name");return}
+	if (form_vals_dict.email==null || form_vals_dict.email==undefined || form_vals_dict.email==""){alert("Please enter email");return}
+	email_is_valid=check_email_str(form_vals_dict.email)
+	if (email_is_valid==false){alert("Please enter a valid email");return}	
+	if (form_vals_dict.password==null || form_vals_dict.password==undefined || form_vals_dict.password==""){alert("Please enter password");return}
+	if (form_vals_dict.password!=form_vals_dict.password2) {alert("Passwords must match");return}
+
+	post_data("signup_user",form_vals_dict,function(obj1){
+		console.log(obj1)
+		console.log(str(obj1))
+		if (obj1.success==true) {
+			alert("You successfully signed up")
+			$('.modal').modal('hide');
+			if (obj1.email!=null) setCookie("userid", obj1.email, 1)
+			$('.logged-in').show()
+			$('.logged-out').hide()					
+		} 
+		else alert(obj1.message)
+		
+		
+		
+	})
+
 }
 
-function email_login_user(){
+function login_user(){
 	//get info from login form, and upload it to server, and save the email in local storage
+	cur_qs_dict=parse_qs()
+	form_vals_dict=get_vals("login_form")	
+	console.log(form_vals_dict)
+	if (form_vals_dict.email==null || form_vals_dict.email==undefined || form_vals_dict.email==""){alert("Please enter email");return}
+	email_is_valid=check_email_str(form_vals_dict.email)
+	if (email_is_valid==false){alert("Please enter a valid email");return}	
+	if (form_vals_dict.password==null || form_vals_dict.password==undefined || form_vals_dict.password==""){alert("Please enter password");return}
+	post_data("login_user",form_vals_dict,function(obj1){
+		console.log(obj1)
+		console.log(str(obj1))
+		if (obj1.success==true) {
+			alert("You successfully logged in")
+			$('.modal').modal('hide');
+			if (obj1.email!=null) setCookie("userid", obj1.email, 1)
+			$('.logged-in').show()
+			$('.logged-out').hide()				
+		} 
+		else alert(obj1.message)
+		
+		
+		
+	})
+}
+
+function logout(){
+	delCookie("userid")
+	$('.logged-in').hide()
+	$('.logged-out').show()
+	alert("Logged out successfully")
 }
 
 function continue_with_google(){
@@ -49,6 +138,29 @@ function get_user_profile(){
 //send message/feedback
 function send_feedback(){
 	//get info from send feedback form and upload it to server to send email to b2web
+	
+	cur_qs_dict=parse_qs()
+	form_vals_dict=get_vals("feedback_form")
+	form_vals_dict["country"]=cur_qs_dict["country"]
+	console.log(form_vals_dict)
+	if (form_vals_dict.email==null || form_vals_dict.email==undefined || form_vals_dict.email==""){alert("Please enter email");return}
+	email_is_valid=check_email_str(form_vals_dict.email)
+	if (email_is_valid==false){alert("Please enter a valid email");return}	
+
+	post_data("send_feedback",form_vals_dict,function(obj1){
+		console.log(obj1)
+		console.log(str(obj1))
+		if (obj1.success==true) {
+			alert("Thanks for your feedback!\nWe will email you shortly at the email provided: "+obj1.email)
+			$('.modal').modal('hide');
+			//if (obj1.email!=null) setCookie("userid", obj1.email, 1)
+		} 
+		else alert(obj1.message)
+		
+		
+		
+	})
+
 }
 
 //share results by email
@@ -98,3 +210,5 @@ function search_for_category(){
 	$("#resultModal").modal()
 	//alert("Hello!")
 }
+
+
