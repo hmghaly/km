@@ -1,4 +1,5 @@
 import os, time, json, re, sys, math
+load_t0=time.time()
 import datetime
 from cgi import parse_qs
 from itertools import groupby
@@ -372,7 +373,14 @@ class results_retrieval:
         self.query_time=t1-t0
         
 
-
+load_t1=time.time() #Keep track of every time the script is loaded
+load_log_dict={}
+load_log_dict["elapsed"]=load_t1-load_t0
+load_log_dict["message"]="loaded"
+now = datetime.datetime.now()
+log_fname="%s-%s-%s.txt"%(now.year, now.month, now.day)    
+tmp_log_fpath=os.path.join(logs_dir,log_fname)
+log_something({},tmp_log_fpath,load_log_dict)
 
 def app(environ, start_response):
     #start_response('200 OK', [('Content-Type', 'text/plain')])
@@ -710,7 +718,7 @@ def app(environ, start_response):
 
 
         results_content=""
-        for item in results_list:
+        for r0, item in enumerate(results_list):
             if not user_allowed: continue
             local_dict=json.loads(item)
             cur_url=local_dict.get("url","")
@@ -730,10 +738,13 @@ def app(environ, start_response):
             cur_description=local_dict.get("description","")
             if found_title: cur_description=found_title+" - "+ cur_description
             if len(cur_description.strip())<30: cur_description=keywords_str
+            result_number=start_i+r0 #start_i is the index of the first result - r0 is how many results after that link_id
+
+            link_id="r"+str(result_number)
 
 
-            cur_template='<blockquote><p><a href="_url_" target="new"> _title_ </a></p><cite>_description_</cite></blockquote>'
-            cur_template_copy=cur_template.replace("_url_",cur_url).replace("_title_",cur_title).replace("_description_",cur_description)
+            cur_template='<blockquote><p><a href="_url_" class="results_link" id="_link_id_" target="new"> _title_ </a></p><cite>_description_</cite></blockquote>'
+            cur_template_copy=cur_template.replace("_url_",cur_url).replace("_title_",cur_title).replace("_description_",cur_description).replace("_link_id_",link_id)
             results_content+=cur_template_copy+"\n"
 
         if not user_allowed: results_content="Please Login to view more results."
@@ -775,13 +786,51 @@ def app(environ, start_response):
         repl_dict2[location_select_id]=create_selection_options(cur_dropdown_list)
 
         page_content=soup_replace_by_ids(page_content,repl_dict2)
-
+        
+        page_title=cat_description +" in %s"%country_name #Now updating page title and description
+        page_description=page_title+ " - B2WEB directory listing of business websites for industries and service providers"
+        new_title="<title>"+page_title+"</title>" 
+        new_description='<meta name="description" content="%s">'%page_description #"<title>"+title+"</title>" 
+        page_content=re.sub('(?i)<title.+?/title>',new_title,page_content)
+        page_content=page_content.replace('<meta content="" name="description"/>',new_description)
+        #page_content=re.sub('(?i)<meta name="description".+?>',new_description,page_content)
     # elif script_name=="w2v":
     #     query_word="glass"
     #     query_word=qs_dict.get("word",[query_word])[0]
     #     try: similar=b2web_model.wv.most_similar(query_word)
     #     except: similar=[]
     #     page_content=str(similar)
+    elif script_name=="profile":
+        cur_fpath=os.path.join(dir_path,"about.html")
+        template_content=read_file(cur_fpath)
+        # filler_fpath=os.path.join(dir_path,"about-content.txt")
+        # filler_content=read_file(filler_fpath)
+        # filler_content=filler_content.replace("\n","<br>")
+        # filler_content=filler_content.replace("><br>",">")
+        repl_dict2={"main_content":"Profile"}
+        page_content=soup_replace_by_ids(template_content,repl_dict2) 
+    
+    elif script_name=="send_click": #logging all the clicks
+        cur_dict={}
+        cur_dict["message"]="success"
+        cur_dict["success"]=True
+        clicks_dir=os.path.join(root_dir,"clicks")
+        if not os.path.exists(clicks_dir): os.makedirs(clicks_dir)
+        clicks_log_path=os.path.join(clicks_dir,"clicks_log.txt")
+        log_something(environ,clicks_log_path,posted_data_dict)        
+        page_content=json.dumps(cur_dict)
+
+
+    elif script_name=="verify": #logging all the clicks
+        cur_dict={}
+        cur_dict["message"]="success"
+        cur_dict["success"]=True
+        # clicks_dir=os.path.join(root_dir,"clicks")
+        # if not os.path.exists(clicks_dir): os.makedirs(clicks_dir)
+        # clicks_log_path=os.path.join(clicks_dir,"clicks_log.txt")
+        # log_something(environ,clicks_log_path,posted_data_dict)        
+        page_content=json.dumps(cur_dict)        
+
 
     elif script_name=="cat_vec":
         #vector_dict tmp_vec0,tmp_wd_vec_dict=get_words_vector(keywords0,b2web_model,excluded_words=[])
@@ -1146,6 +1195,12 @@ def app(environ, start_response):
         mydict.close()
 
         page_content=info_json_obj
+
+        business_dir=os.path.join(root_dir,"business")
+        if not os.path.exists(business_dir): os.makedirs(business_dir)
+        business_log_path=os.path.join(business_dir,"added_business_log.txt")
+        log_something(environ,business_log_path,json_dict)  
+
 # cur_url=local_dict.get("url","")
 #             cur_title=local_dict.get("title",cur_url)
 #             #cur_url='<a href="%s" target="new">%s</a>'%(local_dict.get("url",""),local_dict.get("url",""))
