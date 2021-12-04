@@ -1160,13 +1160,17 @@ def app(environ, start_response):
         json_dict=json.loads(test_json)
         cur_url=json_dict.get("business_url","")
         cur_country=json_dict.get("country","")
+        cur_business_email=json_dict.get("business_email","")
+        cur_user_email=json_dict.get("user_email","")
+
         cur_cat=json_dict.get("business_category","")
         cur_loc=json_dict.get("business_location","") #we will need to adjust to multiple locations
         info_json_dict={}
         info_json_dict["url"]=cur_url
         info_json_dict["title"]=json_dict.get("business_name","")        
         info_json_dict["description"]=json_dict.get("business_description","")
-        info_json_dict["locations"]=[cur_loc]
+        info_json_dict["business_email"]=cur_business_email
+        info_json_dict["user_email"]=cur_user_email
 
         info_json_obj=json.dumps(info_json_dict)
         
@@ -1179,7 +1183,7 @@ def app(environ, start_response):
         cur_rev_url=reverse_url(cur_url.lower())
         
 
-        manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain)
+        manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
         if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
         cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
 
@@ -1199,7 +1203,19 @@ def app(environ, start_response):
         business_dir=os.path.join(root_dir,"business")
         if not os.path.exists(business_dir): os.makedirs(business_dir)
         business_log_path=os.path.join(business_dir,"added_business_log.txt")
-        log_something(environ,business_log_path,json_dict)  
+        log_something(environ,business_log_path,json_dict) 
+
+        #Now sending an email with the notification
+        email_to1=cur_user_email
+        email_subject1="Website Submission to B2WEB Directory: "+cur_url[:20]
+        email_html1="""Hello,<br>
+        This is a notification that you have submitted the following website to B2WEB directory:<br>%s<br>
+        You will be notified with the progress, verification and approval of your submission. Meanwhile, you can continue browing the directory at 
+        <a href="http://kmatters.com/b2web">B2WEB</a><br><br>
+        Best Regards, <br> B2WEB Team
+        """%(cur_url)
+
+        send_email(email_to1,email_subject1,email_html1)  
 
 # cur_url=local_dict.get("url","")
 #             cur_title=local_dict.get("title",cur_url)
