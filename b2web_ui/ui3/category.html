@@ -555,7 +555,7 @@
                                 <span class="input-icon"><i class="fa fa-user"></i></span>
                             </div>
                             <div class="form-group">
-                                <input class="signup" type="email" name="email" placeholder="E-mail Address">
+                                <input class="signup" type="email" name="email" id="signup_user_email" placeholder="E-mail Address">
                                 <span class="input-icon"><i class="fa fa-envelope"></i></span>
                             </div>
                             <div class="form-group">
@@ -599,32 +599,58 @@
                 <div class="modal-body">
                     <div class="login-form">
                             <form action="javascript:void(0);">
-                            <!-- <h1>Add Your Business</h1> -->
-<!--                             <div class="form-group">
-                                <input type="text" name="name" placeholder="Name of business">
-                                <span class="input-icon"><i class="fa fa-user"></i></span>
+<!--                             <h1>Add Your Business</h1> -->
+                            <div id="add_business_frm_part1">
+                                
+
                             </div>
-                            <div class="form-group">
-                                <input type="email" name="email" placeholder="E-mail Address">
-                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
-                            </div>
-                            <div class="form-group">
-                                <input type="url" name="url" placeholder="Business website address">
-                                <span class="input-icon"><i class="fa fa-lock"></i></span>
-                            </div>     --> 
                             <div class="form-group">
                                 <input type="text" name="business_name" class="add_business_frm" placeholder="Name of business">
                                 <span class="input-icon"><i class="fa fa-user"></i></span>
                             </div>
                             <div class="form-group">
-                                <input type="email" name="business_email" class="add_business_frm" placeholder="Contact E-mail Address">
-                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
-                            </div>
-                            <div class="form-group">
                                 <input type="url" name="business_url" class="add_business_frm" placeholder="Business website address">
                                 <span class="input-icon"><i class="fa fa-lock"></i></span>
                             </div> 
+                            <div class="form-group">
+                              <label for="business_description">Business Description:</label>
+                              <textarea class="form-control add_business_frm" rows="4" maxlength="150" name="business_description" id="business_description"></textarea> 
+<!--                               <button class="btn" onclick="">Next</button>  
+ -->                              
+ <!-- <button class="button" onclick="search_for_category()" type="button">Search</button>                              -->
+                            </div>
+                            
 
+
+
+                            <div class="form-group">
+                                <input type="email" name="business_email" class="add_business_frm" placeholder="Company E-mail Address">
+                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
+                            </div>
+                            
+                            <div class="form-group">
+                                <input type="email" name="user_email" class="add_business_frm" placeholder="Your E-mail Address">
+                                <span class="input-icon"><i class="fa fa-envelope"></i></span>
+                            </div>     
+                            
+<!--                             <div class="form-group">
+                                <select id="category_select_dropdown" class="select2 form-control add_business_frm" name="business_category">
+                            <option value="">Business Category</option>
+                            <option value="AL">Alabama</option>
+                            <option value="WY">Wyoming</option>
+                            </select>
+                                <span class="input-icon"><i class="fa fa-tag"></i></span>
+
+                            </div>   -->
+
+<!--                             <div class="form-group">
+                                    <label> Sponsored </label>
+                                    <div class="radio">
+                                <label for="yes"> <input id="yes" type="radio" name="sponsored" value="yes">   Yes </label>
+                                 <label for="no"> <input id="no" type="radio" name="sponsored" value="no">  No </label>
+                                </div>
+
+                            </div>  -->
                             <div class="form-group">
                                 <select id="category_select_dropdown" class="select2 form-control add_business_frm" name="business_category">
                                     <option value="">Business Category</option>
@@ -643,47 +669,18 @@
                                 <span class="input-icon"><i class="fa fa-map-marker-alt"></i></span>
                             </div>  
 
-                            <div class="form-group">
-                              <label for="business_description">Business Description:</label>
-                              <textarea class="form-control add_business_frm" rows="4" name="business_description" id="business_description"></textarea>                                
-                            </div>
-                            <button class="login-btn" onclick="submit_website()">Submit</button>
-                            <!-- 
+                            
 
-                            <div class="form-group">
-                                <select class="select2 form-control" name="state">
-                            <option value="">Business Category</option>
-                            <option value="AL">Alabama</option>
-                            <option value="WY">Wyoming</option>
-                            </select>
-                                <span class="input-icon"><i class="fa fa-tag"></i></span>
-                            </div>      
-                            <div class="form-group">
-                                    <label> Sponsored </label>
-                                    <div class="radio">
-                                <label for="yes"> <input id="yes" type="radio" name="sponsored" value="yes">   Yes </label>
-                                 <label for="no"> <input id="no" type="radio" name="sponsored" value="no">  No </label>
-                                </div>
-
-                            </div> 
-                            <div class="form-group">
-                                <select class="select2 form-control" name="state">
-                            <option value="">Location</option>
-                            <option value="AL">Alabama</option>
-                            <option value="WY">Wyoming</option>
-                            </select>
-                                <span class="input-icon"><i class="fa fa-map-marker-alt"></i></span>
-                            </div>      
-                            <div class="form-group">
+<!--                             <div class="form-group">
                                 <select class="select2 form-control" name="state">
                             <option value="">Nearest city</option>
                             <option value="AL">Alabama</option>
                             <option value="WY">Wyoming</option>
                             </select>
                                 <span class="input-icon"><i class="fa fa-globe"></i></span>
-                            </div>      
+                            </div>   -->    
                                
-                            <button class="login-btn">Submit</button>  -->     
+                            <button class="login-btn" onclick="submit_website()">Submit</button>      
                         
                             
                             </form>
