@@ -23,9 +23,6 @@ function init(){
 			console.log(obj1)
 		})
 
-	    // event.current;
-	    // event.stopImmediatePropagation();
-	    //(... rest of your JS code)
 	});	
 }
 
@@ -36,12 +33,28 @@ function submit_website(){
 	cur_qs_dict=parse_qs()
 	form_vals_dict=get_vals("add_business_frm")
 	form_vals_dict["country"]=cur_qs_dict["country"]
-	form_vals_dict["user_email"]="test@test.com"//get from local storage - can be different from contact email
+	//form_vals_dict["user_email"]="test@test.com"//get from local storage - can be different from contact email
 	console.log(form_vals_dict)
 	post_data("add_business",form_vals_dict,function(obj1){
 		console.log(obj1)
 		console.log(str(obj1))
-		alert("Your website is successfully added! Check your profile for all the websites you submitted.")
+		submission_user_email=obj1["user_email"]
+		if (submission_user_email==null) {
+			alert("A problem was encountered.")
+			return
+		}
+		userid=getCookie("userid")
+		if (userid=="" || submission_user_email!=userid){
+			alert("Submission successful! To follow up, make sure to have an account with your email: "+submission_user_email)
+			$('.modal').modal('hide');
+			$('#registerModal').modal('show');
+			$$("signup_user_email").value=submission_user_email
+
+		}
+		else {
+			alert("Submission successful! Check your profile for all your submissions.")
+		}
+		
 		$('.modal').modal('hide');
 	})
 }
