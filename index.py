@@ -76,13 +76,17 @@ def soup_replace_by_ids(html_content0,repl_dict0,append=False):
         html_content1=html_content1.replace(element_str0,new_content0)
     return html_content1
 
-def create_selection_options(list_vals_labels): # create selection drop down from a list of labels and vals
+def create_selection_options(list_vals_labels,selected0=None): # create selection drop down from a list of labels and vals
     cur_dropdown_content=''
     for val0,label0 in list_vals_labels:
         cur_op_tag='<option value="%s">%s</option>'%(val0,label0)
+        if val0==selected0: cur_op_tag='<option value="%s" selected>%s</option>'%(val0,label0)
         cur_dropdown_content+=cur_op_tag
     return cur_dropdown_content 
 
+def create_time_str(time_tuple):
+    time_str="%s/%s/%s - %s:%s:%s"%(time_tuple[0],time_tuple[1],time_tuple[2],time_tuple[3],time_tuple[4],time_tuple[5])
+    return time_str
 
 # sys.path.insert(km_code_dir)
 cwd=os.getcwd()
@@ -155,6 +159,10 @@ def log_something(environ0,log_fpath0,log_content_dict0={}):
 def hash_password(pwd0):
     pwd0=pwd0.encode('utf-8')
     return hashlib.sha256(pwd0).hexdigest()
+
+def get_time_tuple():
+    now = datetime.datetime.now()
+    return (now.year, now.month, now.day, now.hour, now.minute, now.second) 
 #Email Settings
 #email_from="noreply@kmatters.com"
 
@@ -198,49 +206,6 @@ def send_email(email_to0,email_subject0,email_html0,email_from0="contact@kmatter
     server.sendmail(email_from0, email_to0, msg.as_string())
     server.quit()  
     return str(msg)
-# def send_email(email_to,email_subject,email_html_fpath,email_html_content="",email_from="contact@kmatters.com",from_name="B2WEB Team",email_password="UylWJ!VKZ-A$",server_name="mail.kmatters.com",port=587):
-
-#     if email_html_fpath!="":
-#         email_html_template_fopen=open(email_html_fpath)
-#         email_html=email_html_template_fopen.read()
-#         email_html_template_fopen.close()
-#     if email_html_content!="":  
-#         email_html=email_html_content
-
-
-#     server = smtplib.SMTP(server_name, port)
-#     server.login(email_from, email_password)
-
-#     if type(email_to) is list: email_to=", ".join(email_to)
-
-#     # Create message container - the correct MIME type is multipart/alternative.
-#     msg = MIMEMultipart('alternative')
-#     msg['Subject'] = email_subject #"Registration Successful!"
-#     email_from_full = "%s <%s>"%(from_name,email_from)
-#     msg['From'] = email_from_full
-#     msg['To'] = email_to
-#     msg['Message-ID'] = make_msgid()
-
-#     email_txt=email_html.replace("<br>","\n")
-
-#     # Record the MIME types of both parts - text/plain and text/html.
-#     part1 = MIMEText(email_txt, 'plain')
-#     part2 = MIMEText(email_html, 'html')
-
-#     # Attach parts into message container.
-#     # According to RFC 2046, the last part of a multipart message, in this case
-#     # the HTML message, is best and preferred.
-#     msg.attach(part1)
-#     msg.attach(part2)
-
-#     # Send the message via local SMTP server.
-#     #s = smtplib.SMTP('localhost')
-#     # sendmail function takes 3 arguments: sender's address, recipient's address
-#     # and message to send - here it is sent as one string.
-#     server.sendmail(email_from, email_to, msg.as_string())
-#     server.quit()
-#     return str(msg)
-
 
 def gen_pagination(start_i,n_results_per_page,n_full):
     displayed_pages=[]
@@ -444,19 +409,12 @@ def app(environ, start_response):
         locations_fopen.close()
         city_list=locations_obj["city_list"]
 
-
-
-
-
     #now creating a script name from the URL b2web/index = b2web/about ... etc
 
     script_url=environ["SCRIPT_URL"].strip("/")
     script_split=script_url.split("/")
     if len(script_split)==1: script_name="intro"
     else: script_name=script_split[-1]
-
-
-
 
     #page_content="<html><body><h1>Hello World 12345</h1> </body></html>"
     if script_name=="index":
@@ -571,9 +529,6 @@ def app(environ, start_response):
         cat_fpath=os.path.join(manual_dir,cat+".txt")
         manual_cat_fpath=os.path.join(manual_dir,cat+".txt")
         info_dict_path=os.path.join(km_data_dir,country,"info_dict.sqlite")
-
-
-        
 
         t0=time.time()
         mydict = SqliteDict(info_dict_path, autocommit=True)
@@ -821,16 +776,78 @@ def app(environ, start_response):
         page_content=json.dumps(cur_dict)
 
 
-    elif script_name=="verify": #logging all the clicks
+    elif script_name=="verify": #verify that en email is valid
         cur_dict={}
         cur_dict["message"]="success"
         cur_dict["success"]=True
+        cur_email=qs_dict.get("email",[""])[0] #we will need to fix this for all qs_dict instances - just get the string not a list
+        if cur_email!="":
+            user_dir=os.path.join(root_dir,"users")
+            user_dict_path=os.path.join(user_dir,"user_dict.sqlite")
+            user_dict = SqliteDict(user_dict_path, autocommit=True)
+            #cur_dict["message"]="test: "+cur_email
+            check_user_entry=user_dict.get(cur_email,"{}")
+            check_user_entry_dict=json.loads(check_user_entry)
+            is_already_verified=check_user_entry_dict.get("verified",False)
+            if is_already_verified: cur_dict["message"]+= " - already verified"
+            check_user_entry_dict["verified"]=True
+            user_dict[cur_email]=json.dumps(check_user_entry_dict)
+
+            user_dict.close()
+        else:
+            cur_dict["message"]="no email provided to verify"
+            cur_dict["success"]=False
+
+
+
+
+
+        #user_dir=os.path.join(root_dir,"users") user_dict_path=os.path.join(user_dir,"user_dict.sqlite") user_dict = SqliteDict(user_dict_path, autocommit=True) check_user_entry=user_dict.get(signup_email) 
+
         # clicks_dir=os.path.join(root_dir,"clicks")
         # if not os.path.exists(clicks_dir): os.makedirs(clicks_dir)
         # clicks_log_path=os.path.join(clicks_dir,"clicks_log.txt")
         # log_something(environ,clicks_log_path,posted_data_dict)        
         page_content=json.dumps(cur_dict)        
 
+    elif script_name=="approve": #approve website submission
+        cur_dict={}
+        cur_dict["message"]="success"
+        cur_dict["success"]=True
+        cur_url_id=qs_dict.get("url",[""])[0]
+        cur_cat=qs_dict.get("cat",[""])[0]
+        cur_country=qs_dict.get("country",[""])[0]
+
+        
+        # clicks_dir=os.path.join(root_dir,"clicks")
+        # if not os.path.exists(clicks_dir): os.makedirs(clicks_dir)
+        # clicks_log_path=os.path.join(clicks_dir,"clicks_log.txt")
+        # log_something(environ,clicks_log_path,posted_data_dict)        
+        page_content=json.dumps(cur_dict) 
+
+    elif script_name=="delete": #delete website from category
+        cur_dict={}
+        cur_dict["message"]="success"
+        cur_dict["success"]=True
+        cur_email=qs_dict.get("email")
+        
+        # clicks_dir=os.path.join(root_dir,"clicks")
+        # if not os.path.exists(clicks_dir): os.makedirs(clicks_dir)
+        # clicks_log_path=os.path.join(clicks_dir,"clicks_log.txt")
+        # log_something(environ,clicks_log_path,posted_data_dict)        
+        page_content=json.dumps(cur_dict) 
+
+    elif script_name=="update": #update website information
+        cur_dict={}
+        cur_dict["message"]="success"
+        cur_dict["success"]=True
+        cur_email=qs_dict.get("email")
+        
+        # clicks_dir=os.path.join(root_dir,"clicks")
+        # if not os.path.exists(clicks_dir): os.makedirs(clicks_dir)
+        # clicks_log_path=os.path.join(clicks_dir,"clicks_log.txt")
+        # log_something(environ,clicks_log_path,posted_data_dict)        
+        page_content=json.dumps(cur_dict) 
 
     elif script_name=="cat_vec":
         #vector_dict tmp_vec0,tmp_wd_vec_dict=get_words_vector(keywords0,b2web_model,excluded_words=[])
@@ -895,7 +912,7 @@ def app(environ, start_response):
             hashed_password=hash_password(signup_password)
 
         #if email is found  
-        user_dir=os.path.join(root_dir,"users")
+        user_dir=os.path.join(root_dir,"users") #user_dir=os.path.join(root_dir,"users") user_dict_path=os.path.join(user_dir,"user_dict.sqlite") user_dict = SqliteDict(user_dict_path, autocommit=True) check_user_entry=user_dict.get(signup_email) 
         if not os.path.exists(user_dir): os.makedirs(user_dir)
         user_dict_path=os.path.join(user_dir,"user_dict.sqlite")
         user_log_path=os.path.join(user_dir,"user_log.txt")
@@ -952,13 +969,6 @@ def app(environ, start_response):
         login_email=str(login_email).strip()
 
         hashed_login_password=hash_password(login_password)
-
-        #login_email="hmghaly@gmail.com"
-
-        # output["login_email"]=login_email
-        # output["login_password"]=login_password
-        # output["hashed_login_password"]=hashed_login_password
-
         output["email"]=login_email
 
 
@@ -1022,15 +1032,21 @@ def app(environ, start_response):
     elif script_name=="traffic_overview":
         file_list=os.listdir(logs_dir)
         file_list.sort()
-        tmp_content="<html><body>"
-        tmp_content+="<h2>Select which day</h2>"
+        #tmp_content="<html><body>"
+        tmp_content="<h2>Select which day</h2>"
         for fname in file_list:
             just_date=fname.split(".")[0]
             href="traffic?day="+just_date
             tmp_content+='<a href="%s">%s</a><br>'%(href,just_date)
 
-        tmp_content+="</body></html>"
-        page_content=tmp_content #json.dumps(output)
+        #tmp_content+="</body></html>"
+        #page_content=tmp_content #json.dumps(output)
+        
+        cur_fpath=os.path.join(dir_path,"dashboard-template.html")
+        template_content=read_file(cur_fpath)
+        repl_dict2={"main_content":tmp_content}
+        page_content=soup_replace_by_ids(template_content,repl_dict2) 
+
 
     elif script_name=="traffic":
         #output={}
@@ -1059,7 +1075,8 @@ def app(environ, start_response):
             cur_list.append((cur_ip,cur_time,cat,country,domain,start_i,script_url))
         cur_list.sort()
         grouped=[(key,[v[1:] for v in list(group)]) for key,group in groupby(cur_list,lambda x:x[0])]
-        content="<html><body><table>"
+        #content="<html><body><table>"
+        tmp_content="<table>"
         for ip0,grp in grouped:
             ip_rquest_url="https://geolocation-db.com/json/%s&position=true"%ip0
             loc_str='<a href="%s" target="new">Where?</a>'%ip_rquest_url
@@ -1069,20 +1086,24 @@ def app(environ, start_response):
             # loc_str="%s, %s"%(city_name,country_name)
 
 
-            content+="<tr><td><h2>%s</h2></td><td>%s</td></tr>"%(ip0,loc_str)
+            tmp_content+="<tr><td><h2>%s</h2></td><td>%s</td></tr>"%(ip0,loc_str)
             for gr in grp:
                 cur_list=list(gr)
                 time_tuple=cur_list[0]
                 time_str="%s/%s/%s - %s:%s:%s"%(time_tuple[0],time_tuple[1],time_tuple[2],time_tuple[3],time_tuple[4],time_tuple[5])
                 cur_list[0]=time_str
-                content+="<tr><td>"+"</td><td>".join([str(c0) for c0 in cur_list])+"</td></tr>"
-        content+="</table></body></html>"
+                tmp_content+="<tr><td>"+"</td><td>".join([str(c0) for c0 in cur_list])+"</td></tr>"
+        tmp_content+="</table>"
 
 
         fopen.close()
         #output["ip_list"]=cur_list
 
-        page_content=content #json.dumps(output)
+        #page_content=content #json.dumps(output)
+        cur_fpath=os.path.join(dir_path,"dashboard-template.html")
+        template_content=read_file(cur_fpath)
+        repl_dict2={"main_content":tmp_content}
+        page_content=soup_replace_by_ids(template_content,repl_dict2) 
 
     # elif script_name=="send_email":
     #     #vR};4Ix0*K4o noreply@kmatters.com a2plcpnl0342.prod.iad2.secureserver.net 465
@@ -1171,6 +1192,11 @@ def app(environ, start_response):
         info_json_dict["description"]=json_dict.get("business_description","")
         info_json_dict["business_email"]=cur_business_email
         info_json_dict["user_email"]=cur_user_email
+        info_json_dict["time"]=get_time_tuple()
+        info_json_dict["cat"]=cur_cat
+        info_json_dict["loc"]=cur_loc
+        info_json_dict["action"]="add"
+
 
         info_json_obj=json.dumps(info_json_dict)
         
@@ -1182,28 +1208,37 @@ def app(environ, start_response):
         if len(url_split)>2 and url_split[-2].lower() in ["gov","edu","org"]: cur_domain=url_split[-2].lower()
         cur_rev_url=reverse_url(cur_url.lower())
         
+        #Instead of adding the website directly to the backend, it will go through the approval process
+        if False: #directly add to the backend - not activated
+            manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
+            if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
+            cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
+            insert_sorted(cur_rev_url,cat_fpath,line_size=100)
+            info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite")
+            mydict = SqliteDict(info_dict_path, autocommit=True)
+            mydict[cur_rev_url]=info_json_obj
+            mydict.close()
 
-        manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
-        if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
-        cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
 
 
 
-
-        # if posted_data: page_content=str(posted_data)
-        # else: page_content=info_json_obj#str([bare_url,cur_domain,cur_country,cur_cat,cur_loc,cur_description])
-        insert_sorted(cur_rev_url,cat_fpath,line_size=100)
-        info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite")
-        mydict = SqliteDict(info_dict_path, autocommit=True)
-        mydict[cur_rev_url]=info_json_obj
-        mydict.close()
-
-        page_content=info_json_obj
 
         business_dir=os.path.join(root_dir,"business")
         if not os.path.exists(business_dir): os.makedirs(business_dir)
         business_log_path=os.path.join(business_dir,"added_business_log.txt")
         log_something(environ,business_log_path,json_dict) 
+        pending_fpath=os.path.join(business_dir,"pending.txt") #Add the website to pending submissions
+        pending_fopen=open(pending_fpath,"a")
+        pending_fopen.write(cur_rev_url+"\n")
+        pending_fopen.close()
+        submission_dict_path=os.path.join(business_dir,"pending.sqlite")
+        mydict = SqliteDict(submission_dict_path, autocommit=True)
+        mydict[cur_rev_url]=info_json_obj
+        mydict.close()
+
+
+
+
 
         #Now sending an email with the notification
         email_to1=cur_user_email
@@ -1217,6 +1252,7 @@ def app(environ, start_response):
 
         send_email(email_to1,email_subject1,email_html1)  
 
+        page_content=info_json_obj
 # cur_url=local_dict.get("url","")
 #             cur_title=local_dict.get("title",cur_url)
 #             #cur_url='<a href="%s" target="new">%s</a>'%(local_dict.get("url",""),local_dict.get("url",""))
@@ -1230,10 +1266,92 @@ def app(environ, start_response):
 #             keywords_str+="- <b>score</b>: %s"%cur_score #temporary
 
 #             cur_description=local_dict.get("description",keywords_str)
+    elif script_name=="pending": #The dashboard for submitted websites currently pending
+        business_dir=os.path.join(root_dir,"business")
+        pending_fpath=os.path.join(business_dir,"pending.txt")
+        pending_content=read_file(pending_fpath)
+        pending_items=reversed(pending_content.split("\n"))
+        
+        submission_dict_path=os.path.join(business_dir,"pending.sqlite")
+        mydict = SqliteDict(submission_dict_path, autocommit=True)
+        #mydict[cur_rev_url]=info_json_obj
+        
+        # tmp_content='<html><head>'
+        # tmp_content+="""
+        # <meta charset="utf-8">
+        # <meta name="viewport" content="width=device-width, initial-scale=1">
+        # <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        # <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        # <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        # <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        # <script src="../b2web_ui/js/script.js"></script>
+        # <script src="../b2web_ui/js/b2web.js"></script>
+        # """
+        #tmp_content+='</head>'
+        #tmp_content+='<body>'
+        tmp_content='<h3 class="text-center">Pending Website Submissions</h3><hr>' 
+        #tmp_content+='<table border="1">'       
+        for pi in pending_items:
+            if pi.strip()=="": continue
+            cur_info=mydict.get(pi,"{}")
+            cur_info_dict=json.loads(cur_info)
+            cur_url=cur_info_dict.get("url","")
+            cur_cat=cur_info_dict.get("cat","")
+            cur_time=cur_info_dict.get("time")
+            cur_user_email=cur_info_dict.get("user_email","")
+            cur_title=cur_info_dict.get("title","")
+            
+
+            cur_description=cur_info_dict.get("description","")
+            link_str='<a href="%s" target="new">%s</a>'%(cur_url,pi)
+
+            #tmp_content+=link
+            #create_selection_options
+            cur_dropdown_list=[["","Business Category"]]+[(v[1],v[0]) for v in cat_list]
+
+            select_str='<select name="cat" class="approval" id="cat_dropdown">'+create_selection_options(cur_dropdown_list,cur_cat)+"</select>"
+
+            #tmp_content+="<br>"+cur_info
+            tmp_content+='<div class="row text-center"><div class="col">%s</div><div class="col">%s</div></div>'%(link_str,select_str)
+            #tmp_content+="<br>"
+            tmp_input='<input type="text" class="form-control" id="website_id" name="id" value="%s" hidden>'%pi
+            tmp_input+="<b>Title:</b> "+ cur_title+"<br>"
+            tmp_input+="<b>Submitter email:</b> "+cur_user_email+"<br>"
+            if cur_time!=None: 
+                #time_str="/".join(cur_time[:3])+" - "+":".join(cur_time[3:])
+                tmp_input+=create_time_str(cur_time) #str(cur_time)
+            tmp_desc_text_area='Description:<br><textarea class="form-control approval" rows="5" id="description" name="description">%s</textarea>'%cur_description
+            tmp_content+='<div class="row text-center"><div class="col">%s</div><div class="col">%s</div></div>'%(tmp_input,tmp_desc_text_area)
+            tmp_content+="<br>"
+            approve_btn_str='<button class="btn btn-success approve-btn">Approve</button>'
+            reject_btn_str='<button class="btn btn-danger reject-btn">Reject</button>'
+            tmp_content+='<div class="row text-center"><div class="col"></div><div class="col">%s</div><div class="col">%s</div><div class="col"></div></div>'%(approve_btn_str,reject_btn_str)
+
+
+            #tmp_content+='<tr><td>%s</td><td>%s</td><td>Approve</td><td>Reject</td></tr>'%(pi,cur_info)
+            tmp_content+='<hr>'
+
+        #tmp_content+='</table>'       
+        #tmp_content+='</body></html>'
+
+
+        mydict.close()
+
+
+
+        #page_content=tmp_content
+        cur_fpath=os.path.join(dir_path,"dashboard-template.html")
+        template_content=read_file(cur_fpath)
+        repl_dict2={"main_content":tmp_content}
+        page_content=soup_replace_by_ids(template_content,repl_dict2) 
+
+
 
         
     else:
-        page_content="<html><body><h1>Test Page</h1> Error: %s <br> Trace: %s </body></html>"%(error,trace)
+        #page_content="<html><body><h1>Test Page</h1> Error: %s <br> Trace: %s </body></html>"%(error,trace)
+        page_content="<html><body><h1>Unknown Page</h1> Not clear what this page is. <br> <a href='directory'>Go to B2WEB</a>  </body></html>"
+
 
     #We will need to have a page to process the login/signup
     #and a page to process category search requests
