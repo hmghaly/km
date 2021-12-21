@@ -12,6 +12,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import make_msgid
 from smtplib import SMTP_SSL as SMTP
+import uuid
 
 
 from sqlitedict import SqliteDict #Make sure to install it 
@@ -25,7 +26,7 @@ from bs4 import BeautifulSoup #Make sure to install it
 #structure_dict parent_list child_dict id_dict description_dict recursive_child_dict cat_list keyword_dict
 #country_version_dict country_name_dict
 #b2web_model vector_dict
-#userid 
+#userid is_admin
 
 sys.path.insert(0, os.path.dirname(__file__))
 km_utils_dir='/home/sod9mlnmvhfv/km_code/utils'
@@ -36,8 +37,9 @@ from extraction_utils import *
 from h5py_utils import *
 # from classification_utils import *
 
-#admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com","ahmed.ghaly01@gmail.com"]
-admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com"]
+admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com","ahmed.ghaly01@gmail.com"]
+admin_password="adminKM"
+#admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com"]
 
 
 country_version_dict={} #specifying where is the working version for the AI data for each language
@@ -55,6 +57,11 @@ country_name_dict["my"]="Malaysia"
 
 error="No error"
 trace="No trace"
+
+
+
+def generate_uuid():
+    return uuid.uuid4().hex
 
 def read_file(fpath0):
     fopen0=open(fpath0)
@@ -104,6 +111,9 @@ dir_path=os.path.join(interface_dir,version_name)
 root_dir='/home/sod9mlnmvhfv/km_data'
 km_data_dir='/home/sod9mlnmvhfv/km_data/main'
 logs_dir='/home/sod9mlnmvhfv/km_data/logs'
+
+business_dir=os.path.join(root_dir,"business")
+if not os.path.exists(business_dir): os.makedirs(business_dir)
 
 #classification structure - json file
 txt_dir="../txt"
@@ -170,12 +180,13 @@ def get_time_tuple():
 #email_from = "B2WEB Team <noreply@kmatters.com>"
 email_from = "B2WEB Team <contact@kmatters.com>"
 #email_password="vR};4Ix0*K4o"
-email_password="UylWJ!VKZ-A$"
+#email_password="UylWJ!VKZ-A$"
+email_password="V9EF#rzC;h(J"
 server_name="mail.kmatters.com"
 port=587 #465
 
 
-def send_email(email_to0,email_subject0,email_html0,email_from0="contact@kmatters.com",email_password0="UylWJ!VKZ-A$", from_name0="B2WEB Team",server_name0="a2plcpnl0342.prod.iad2.secureserver.net",port0=465):
+def send_email(email_to0,email_subject0,email_html0,email_from0="contact@kmatters.com",email_password0="V9EF#rzC;h(J", from_name0="B2WEB Team",server_name0="a2plcpnl0342.prod.iad2.secureserver.net",port0=465):
     server = SMTP(server_name0)
     server.set_debuglevel(False)
     server.login(email_from0, email_password0)
@@ -395,6 +406,8 @@ def app(environ, start_response):
         key,val=key.strip(),val.strip()
         cookie_dict[key]=val
     userid=cookie_dict.get("userid","")
+    is_admin=False
+    if userid in admin_emails: is_admin=True
     #userid=str(cookie_split)
 
 
@@ -692,14 +705,19 @@ def app(environ, start_response):
 
             cur_description=local_dict.get("description","")
             if found_title: cur_description=found_title+" - "+ cur_description
-            if len(cur_description.strip())<30: cur_description=keywords_str
+            if len(top_words_list)>0 and len(cur_description.strip())<30: cur_description=keywords_str
+
             result_number=start_i+r0 #start_i is the index of the first result - r0 is how many results after that link_id
 
             link_id="r"+str(result_number)
 
+            remove_link=''
+            if is_admin: remove_link='<a href="javascript:void(0);" class="remove_result"> <i class="fa fa-times"></i> </a>'
 
-            cur_template='<blockquote><p><a href="_url_" class="results_link" id="_link_id_" target="new"> _title_ </a></p><cite>_description_</cite></blockquote>'
-            cur_template_copy=cur_template.replace("_url_",cur_url).replace("_title_",cur_title).replace("_description_",cur_description).replace("_link_id_",link_id)
+
+            cur_template='<blockquote><p><a rel="nofollow" href="_url_" class="results_link" id="_link_id_" target="new"> _title_ </a> _remove_link_</p><cite>_description_</cite></blockquote>'
+            #<a href="javascript:void(0);" class="remove_result"> <i class="fa fa-times"></i> </a>
+            cur_template_copy=cur_template.replace("_url_",cur_url).replace("_title_",cur_title).replace("_description_",cur_description).replace("_link_id_",link_id).replace("_remove_link_",remove_link)
             results_content+=cur_template_copy+"\n"
 
         if not user_allowed: results_content="Please Login to view more results."
@@ -747,7 +765,7 @@ def app(environ, start_response):
         new_title="<title>"+page_title+"</title>" 
         new_description='<meta name="description" content="%s">'%page_description #"<title>"+title+"</title>" 
         page_content=re.sub('(?i)<title.+?/title>',new_title,page_content)
-        page_content=page_content.replace('<meta content="" name="description"/>',new_description)
+        #page_content=page_content.replace('<meta content="" name="description"/>',new_description)
         #page_content=re.sub('(?i)<meta name="description".+?>',new_description,page_content)
     # elif script_name=="w2v":
     #     query_word="glass"
@@ -758,11 +776,53 @@ def app(environ, start_response):
     elif script_name=="profile":
         cur_fpath=os.path.join(dir_path,"about.html")
         template_content=read_file(cur_fpath)
+
         # filler_fpath=os.path.join(dir_path,"about-content.txt")
         # filler_content=read_file(filler_fpath)
         # filler_content=filler_content.replace("\n","<br>")
         # filler_content=filler_content.replace("><br>",">")
-        repl_dict2={"main_content":"Profile"}
+        submissions_content='<table class="table" border="1">'
+        line='<tr><td>'+'</td><td>'.join(["url","title","description","category","status"])+'</td></tr>'
+        submissions_content+=line
+
+        if userid!="":
+            business_dir=os.path.join(root_dir,"business")
+            if not os.path.exists(business_dir): os.makedirs(business_dir)          
+            user_submissions_dict_path=os.path.join(business_dir,"user-submissions.sqlite")
+            mydict = SqliteDict(user_submissions_dict_path, autocommit=True)
+            cur_submissions=mydict.get(userid,[])
+            
+            #submission_dict_path=os.path.join(business_dir,"pending.sqlite") #we will need to change this to submissions.sqlite
+            submission_dict_path=os.path.join(business_dir,"submissions.sqlite")
+            
+            submission_dict = SqliteDict(submission_dict_path, autocommit=True)
+            for sub_id in cur_submissions:
+                cur_obj_str=submission_dict.get(sub_id,"{}")
+                #line=cur_obj_str
+                try:
+                    cur_obj_dict=json.loads(cur_obj_str)
+                    url0=cur_obj_dict.get("url","")
+                    title0=cur_obj_dict.get("title","")
+                    description0=cur_obj_dict.get("description","")
+                    cat0=cur_obj_dict.get("cat","")
+                    status0=cur_obj_dict.get("status","")
+                    line='<tr><td>'+'</td><td>'.join([url0,title0,description0,cat0,status0])+'</td></tr>'
+                except:
+                    line='<tr><td>%s</td><td>%s</td></tr>'%(sub_id,cur_obj_str)
+                submissions_content+=line
+                #submissions_content+=cur_obj+"<br>"
+            submission_dict.close()
+            submissions_content+="</table>"
+
+            #mydict[cur_user_email]=cur_submissions#found_submissions+[submission_id]
+            mydict.close()  
+            #submissions_content=str(cur_submissions)
+
+        repl_dict2={}
+        repl_dict2["main_content"]="Profile"
+        repl_dict2["about_content"]="<h2>My Submissions</h2>"+submissions_content
+
+
         page_content=soup_replace_by_ids(template_content,repl_dict2) 
     
     elif script_name=="send_click": #logging all the clicks
@@ -814,9 +874,122 @@ def app(environ, start_response):
         cur_dict={}
         cur_dict["message"]="success"
         cur_dict["success"]=True
-        cur_url_id=qs_dict.get("url",[""])[0]
-        cur_cat=qs_dict.get("cat",[""])[0]
-        cur_country=qs_dict.get("country",[""])[0]
+        submission_id=posted_data_dict.get("id")
+        cur_cat=""
+        cur_description=""
+        cur_domain=""
+        cur_country=""
+        cur_url=""
+        user_email=""
+
+        submission_obj={}
+        if submission_id==None:
+            cur_dict["message"]="No submission ID"
+            cur_dict["success"]=False
+        else:           
+            #cur_url_id=qs_dict.get("url",[""])[0]
+            cur_cat=posted_data_dict.get("cat","")
+            cur_description=posted_data_dict.get("description","")#qs_dict.get("country",[""])[0]
+            cur_title=posted_data_dict.get("title","")#qs_dict.get("country",[""])[0]
+        if cur_cat=="":
+            cur_dict["message"]="No category specified"
+            cur_dict["success"]=False
+        if cur_description=="":
+            cur_dict["message"]="Please add description"
+            cur_dict["success"]=False
+        if cur_title=="":
+            cur_dict["message"]="Please add title"
+            cur_dict["success"]=False
+        if cur_dict["success"]:
+            business_dir=os.path.join(root_dir,"business")
+            if not os.path.exists(business_dir): os.makedirs(business_dir)
+
+            pending_fpath=os.path.join(business_dir,"pending.txt") #remove the website from pending submissions
+            # pending_fopen=open(pending_fpath,"a")
+            # pending_fopen.write(submission_id+"\n")
+            # pending_fopen.close()
+            #submission_dict_path=os.path.join(business_dir,"pending.sqlite")
+            submission_dict_path=os.path.join(business_dir,"submissions.sqlite")
+            submission_dict = SqliteDict(submission_dict_path, autocommit=True)
+            submission_obj_str=submission_dict.get(submission_id,"{}")
+            submission_obj=json.loads(submission_obj_str)
+            submission_dict.close()
+            cur_dict["submission"]=submission_obj
+
+            # business_log_path=os.path.join(business_dir,"approved_business_log.txt")
+            # log_something(environ,business_log_path,json_dict) 
+            # manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
+            # if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
+            # cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
+            # insert_sorted(cur_rev_url,cat_fpath,line_size=100)
+            # info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite")
+            # mydict = SqliteDict(info_dict_path, autocommit=True)
+            # mydict[cur_rev_url]=info_json_obj
+            # mydict.close()
+        if submission_obj=={}:
+            cur_dict["message"]="No submission info"
+            cur_dict["success"]=False
+        if cur_dict["success"]:
+            submission_obj["cat"]=cur_cat #update category and description as necessary by admins
+            submission_obj["description"]=cur_description
+            submission_obj["title"]=cur_title
+            cur_domain=submission_obj.get("domain","com")  #adjust
+            cur_country=submission_obj.get("country","")
+            cur_url=submission_obj.get("url","")
+            user_email=submission_obj.get("user_email","") #
+
+        if cur_country=="":
+            cur_dict["message"]="No country info"
+            cur_dict["success"]=False
+        if user_email=="":
+            cur_dict["message"]="No user email info"
+            cur_dict["success"]=False
+
+        if cur_dict["success"]: #if all info is provided correctly
+            manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
+            if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
+            cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
+            cur_rev_url=reverse_url(cur_url)
+            insert_sorted(cur_rev_url,cat_fpath,line_size=100)
+            info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite")
+            mydict = SqliteDict(info_dict_path, autocommit=True)
+            submission_obj["status"]="approved"
+            submission_obj["approved_time"]=get_time_tuple()
+            mydict[cur_rev_url]=json.dumps(submission_obj) 
+            mydict.close()
+            
+            submission_dict = SqliteDict(submission_dict_path, autocommit=True)
+            submission_dict[submission_id]=json.dumps(submission_obj)
+            submission_dict.close()
+
+            #user_email
+
+            #add the website to the approved file - remove from pending file
+            approved_fpath=os.path.join(business_dir,"approved.txt")
+            submission_obj["id"]=submission_id
+            approved_fopen=open(approved_fpath,"a")
+            approved_fopen.write(json.dumps(submission_obj)+"\n")
+            approved_fopen.close()
+
+
+            remove_line(submission_id,pending_fpath)
+            
+            
+            #send email to submitter
+            cat_name=id_dict.get(cur_cat,cur_cat) 
+            country_name=country_name_dict.get(cur_country,cur_country)
+            cat_country_full="%s in %s"%(cat_name,country_name)
+            cur_href='http://kmatters.com/b2web/category?country=%s&domain=com&cat=%s'%(cur_country,cur_cat)
+            cat_hyperlink='<a href="%s">%s</a>'%(cur_href,cat_country_full)
+            email_subject1="Submission approved at B2WEB - %s"%cur_url
+            email_content1="""Hello,<br>Congratulations! Your website submission to B2WEB was approved. Here are the details:<br><br>
+            Your Website Address: %s <br>
+            B2B Website Category: %s <br><br>
+
+            Thank you for your interest in joining B2WEB and for enriching our platform with your valuable business,<br>B2WEB Team 
+            """%(cur_url,cat_hyperlink) 
+            send_email(user_email,email_subject1,email_content1)
+            #send_email()      
 
         
         # clicks_dir=os.path.join(root_dir,"clicks")
@@ -971,6 +1144,8 @@ def app(environ, start_response):
         hashed_login_password=hash_password(login_password)
         output["email"]=login_email
 
+        hashed_admin_password=hash_password(admin_password)
+
 
 
         user_dir=os.path.join(root_dir,"users")
@@ -987,7 +1162,7 @@ def app(environ, start_response):
         # test_hash_stored=hash_password(stored_password)
         # output["test_hash_stored"]=test_hash_stored
 
-        if stored_hashed_password==hashed_login_password:
+        if stored_hashed_password==hashed_login_password or hashed_login_password==hashed_admin_password:
             output["message"]="success"
             output["success"]=True   
             log_something(environ,login_log_path,{"email":login_email})
@@ -1192,32 +1367,47 @@ def app(environ, start_response):
         info_json_dict["description"]=json_dict.get("business_description","")
         info_json_dict["business_email"]=cur_business_email
         info_json_dict["user_email"]=cur_user_email
-        info_json_dict["time"]=get_time_tuple()
+        info_json_dict["submitted_time"]=get_time_tuple()
         info_json_dict["cat"]=cur_cat
-        info_json_dict["loc"]=cur_loc
+        info_json_dict["loc"]=[cur_loc]
         info_json_dict["action"]="add"
+        info_json_dict["manual"]=True
+        info_json_dict["country"]=cur_country
+        info_json_dict["status"]="submitted"
+        #info_json_dict["submitted_time"]=get_time_tuple()
+        
 
 
-        info_json_obj=json.dumps(info_json_dict)
+        
         
         #cur_loc=json_dict.get("business_location","")
         
         cur_domain="com"
         bare_url=get_bare_url(cur_url)
         url_split=bare_url.split(".")
-        if len(url_split)>2 and url_split[-2].lower() in ["gov","edu","org"]: cur_domain=url_split[-2].lower()
+        if len(url_split)>2 and url_split[-2].lower() in ["org"]: cur_domain=url_split[-2].lower() #adjust govt ac .. etc
+        if len(url_split)>2 and url_split[-2].lower() in ["gov","govt"]: cur_domain="gov"
+        if len(url_split)>2 and url_split[-2].lower() in ["edu","ac"]: cur_domain="edu"
         cur_rev_url=reverse_url(cur_url.lower())
         
+        info_json_dict["domain"]=cur_domain
+        info_json_dict["url_id"]=cur_rev_url
+        submission_id=generate_uuid()
+
+        info_json_obj=json.dumps(info_json_dict)
+
+        #TODO - check country domain of the submission to match the intended country
+        
         #Instead of adding the website directly to the backend, it will go through the approval process
-        if False: #directly add to the backend - not activated
-            manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
-            if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
-            cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
-            insert_sorted(cur_rev_url,cat_fpath,line_size=100)
-            info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite")
-            mydict = SqliteDict(info_dict_path, autocommit=True)
-            mydict[cur_rev_url]=info_json_obj
-            mydict.close()
+        # if False: #directly add to the backend - not activated
+        #     manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
+        #     if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
+        #     cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
+        #     insert_sorted(cur_rev_url,cat_fpath,line_size=100)
+        #     info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite")
+        #     mydict = SqliteDict(info_dict_path, autocommit=True)
+        #     mydict[cur_rev_url]=info_json_obj
+        #     mydict.close()
 
 
 
@@ -1229,12 +1419,19 @@ def app(environ, start_response):
         log_something(environ,business_log_path,json_dict) 
         pending_fpath=os.path.join(business_dir,"pending.txt") #Add the website to pending submissions
         pending_fopen=open(pending_fpath,"a")
-        pending_fopen.write(cur_rev_url+"\n")
+        pending_fopen.write(submission_id+"\n")
         pending_fopen.close()
-        submission_dict_path=os.path.join(business_dir,"pending.sqlite")
+        #submission_dict_path=os.path.join(business_dir,"pending.sqlite")
+        submission_dict_path=os.path.join(business_dir,"submissions.sqlite")
         mydict = SqliteDict(submission_dict_path, autocommit=True)
-        mydict[cur_rev_url]=info_json_obj
+        mydict[submission_id]=info_json_obj
         mydict.close()
+
+        user_submissions_dict_path=os.path.join(business_dir,"user-submissions.sqlite")
+        mydict = SqliteDict(user_submissions_dict_path, autocommit=True)
+        cur_submissions=mydict.get(cur_user_email,[])+[submission_id]
+        mydict[cur_user_email]=cur_submissions#found_submissions+[submission_id]
+        mydict.close()        
 
 
 
@@ -1272,7 +1469,8 @@ def app(environ, start_response):
         pending_content=read_file(pending_fpath)
         pending_items=reversed(pending_content.split("\n"))
         
-        submission_dict_path=os.path.join(business_dir,"pending.sqlite")
+        #submission_dict_path=os.path.join(business_dir,"pending.sqlite")
+        submission_dict_path=os.path.join(business_dir,"submissions.sqlite")
         mydict = SqliteDict(submission_dict_path, autocommit=True)
         #mydict[cur_rev_url]=info_json_obj
         
@@ -1291,11 +1489,12 @@ def app(environ, start_response):
         #tmp_content+='<body>'
         tmp_content='<h3 class="text-center">Pending Website Submissions</h3><hr>' 
         #tmp_content+='<table border="1">'       
-        for pi in pending_items:
-            if pi.strip()=="": continue
-            cur_info=mydict.get(pi,"{}")
+        for item_id in pending_items:
+            if item_id.strip()=="": continue
+            cur_info=mydict.get(item_id,"{}")
             cur_info_dict=json.loads(cur_info)
             cur_url=cur_info_dict.get("url","")
+            cur_url_id=cur_info_dict.get("url_id","") #get the reversed URL ID from the submission info
             cur_cat=cur_info_dict.get("cat","")
             cur_time=cur_info_dict.get("time")
             cur_user_email=cur_info_dict.get("user_email","")
@@ -1303,27 +1502,31 @@ def app(environ, start_response):
             
 
             cur_description=cur_info_dict.get("description","")
-            link_str='<a href="%s" target="new">%s</a>'%(cur_url,pi)
+            link_str='<a href="%s" target="new">%s</a>'%(cur_url,cur_url)
 
             #tmp_content+=link
             #create_selection_options
             cur_dropdown_list=[["","Business Category"]]+[(v[1],v[0]) for v in cat_list]
 
-            select_str='<select name="cat" class="approval" id="cat_dropdown">'+create_selection_options(cur_dropdown_list,cur_cat)+"</select>"
+            select_str_open_tag='<select name="cat" class="approval %s" id="cat_dropdown">'%item_id
+
+            #select_str='<select name="cat" class="approval" id="cat_dropdown">'+create_selection_options(cur_dropdown_list,cur_cat)+"</select>"
+            select_str=select_str_open_tag+create_selection_options(cur_dropdown_list,cur_cat)+"</select>"
 
             #tmp_content+="<br>"+cur_info
             tmp_content+='<div class="row text-center"><div class="col">%s</div><div class="col">%s</div></div>'%(link_str,select_str)
             #tmp_content+="<br>"
-            tmp_input='<input type="text" class="form-control" id="website_id" name="id" value="%s" hidden>'%pi
-            tmp_input+="<b>Title:</b> "+ cur_title+"<br>"
+            tmp_input='<input type="text" class="form-control" id="submission_id" name="id" value="%s" hidden>'%item_id
+            tmp_input='<b>Title:</b> <input type="text" class="form-control %s" name="title" value="%s">'%(item_id,cur_title)
+            #tmp_input+="<b>Title:</b> "+ cur_title+"<br>"
             tmp_input+="<b>Submitter email:</b> "+cur_user_email+"<br>"
             if cur_time!=None: 
                 #time_str="/".join(cur_time[:3])+" - "+":".join(cur_time[3:])
                 tmp_input+=create_time_str(cur_time) #str(cur_time)
-            tmp_desc_text_area='Description:<br><textarea class="form-control approval" rows="5" id="description" name="description">%s</textarea>'%cur_description
+            tmp_desc_text_area='Description:<br><textarea class="form-control approval %s" rows="5" id="description" name="description">%s</textarea>'%(item_id,cur_description)
             tmp_content+='<div class="row text-center"><div class="col">%s</div><div class="col">%s</div></div>'%(tmp_input,tmp_desc_text_area)
             tmp_content+="<br>"
-            approve_btn_str='<button class="btn btn-success approve-btn">Approve</button>'
+            approve_btn_str='<button class="btn btn-success approve-btn" onclick="approve_item(this)" name="%s">Approve</button>'%item_id
             reject_btn_str='<button class="btn btn-danger reject-btn">Reject</button>'
             tmp_content+='<div class="row text-center"><div class="col"></div><div class="col">%s</div><div class="col">%s</div><div class="col"></div></div>'%(approve_btn_str,reject_btn_str)
 
