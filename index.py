@@ -672,6 +672,9 @@ def app(environ, start_response):
         results_list=[]
         for line_item in res_obj.cur_results:
             out=mydict.get(line_item,"{}")
+            tmp_out_dict=json.loads(out)
+            tmp_out_dict["id"]=line_item
+            out=json.dumps(tmp_out_dict)
             results_list.append(out)
         mydict.close()
         t1=time.time()
@@ -691,6 +694,7 @@ def app(environ, start_response):
             local_dict=json.loads(item)
             cur_url=local_dict.get("url","")
             found_title=local_dict.get("title",cur_url)
+            cur_id=local_dict.get("id","")
             cur_title=cur_url
             cur_title=cur_title.replace("http://","").replace("https://","")
             #cur_url='<a href="%s" target="new">%s</a>'%(local_dict.get("url",""),local_dict.get("url",""))
@@ -712,7 +716,7 @@ def app(environ, start_response):
             link_id="r"+str(result_number)
 
             remove_link=''
-            if is_admin: remove_link='<a href="javascript:void(0);" class="remove_result"> <i class="fa fa-times"></i> </a>'
+            if is_admin: remove_link='<a href="javascript:void(0);" name="%s" class="remove_result" onclick="remove_website(this)"> <i class="fa fa-times"></i> </a>'%cur_id
 
 
             cur_template='<blockquote><p><a rel="nofollow" href="_url_" class="results_link" id="_link_id_" target="new"> _title_ </a> _remove_link_</p><cite>_description_</cite></blockquote>'
@@ -881,6 +885,7 @@ def app(environ, start_response):
         cur_country=""
         cur_url=""
         user_email=""
+        country_domain=""
 
         submission_obj={}
         if submission_id==None:
@@ -937,9 +942,13 @@ def app(environ, start_response):
             cur_country=submission_obj.get("country","")
             cur_url=submission_obj.get("url","")
             user_email=submission_obj.get("user_email","") #
+            cur_rev_url=reverse_url(cur_url)
+            country_domain=cur_rev_url.split(".")[0]
+            if cur_country=="" and country_domain in list(country_name_dict.keys()): cur_country= country_domain
+
 
         if cur_country=="":
-            cur_dict["message"]="No country info"
+            cur_dict["message"]="No country info "+country_domain
             cur_dict["success"]=False
         if user_email=="":
             cur_dict["message"]="No user email info"
@@ -949,7 +958,7 @@ def app(environ, start_response):
             manual_domain_dir=os.path.join(km_data_dir,cur_country,"manual",cur_domain) #log submission
             if not os.path.exists(manual_domain_dir): os.makedirs(manual_domain_dir)
             cat_fpath=os.path.join(manual_domain_dir,cur_cat+".txt")
-            cur_rev_url=reverse_url(cur_url)
+            
             insert_sorted(cur_rev_url,cat_fpath,line_size=100)
             info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite")
             mydict = SqliteDict(info_dict_path, autocommit=True)
@@ -986,7 +995,10 @@ def app(environ, start_response):
             Your Website Address: %s <br>
             B2B Website Category: %s <br><br>
 
-            Thank you for your interest in joining B2WEB and for enriching our platform with your valuable business,<br>B2WEB Team 
+            Thank you for your interest in joining B2WEB and for enriching our platform with your valuable business,<br>
+            For any questions, please email us at b2web@kmatters.com<br><br>
+            Best regards,<br>
+            B2WEB Team 
             """%(cur_url,cat_hyperlink) 
             send_email(user_email,email_subject1,email_content1)
             #send_email()      
@@ -999,15 +1011,56 @@ def app(environ, start_response):
         page_content=json.dumps(cur_dict) 
 
     elif script_name=="delete": #delete website from category
-        cur_dict={}
-        cur_dict["message"]="success"
-        cur_dict["success"]=True
-        cur_email=qs_dict.get("email")
+        cur_dict=dict(posted_data_dict)
+
+        cur_dict["user_email"]=userid
+        cur_country=cur_dict.get("country")
+        cur_id=cur_dict.get("id")
+        cur_domain=cur_dict.get("domain")
+        cur_cat=cur_dict.get("cat")
+        out_dict={}
+        #ai_dir=os.path.join(km_data_dir,cur_country,data_version,domain)
+        out_dict["message"]="Not Removed"
+        out_dict["success"]=False
+        
+        if cur_country!=None and cur_id!=None and cur_domain!=None and cur_cat!=None:
+            # info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite") #now we get the info from each result
+            # mydict = SqliteDict(info_dict_path, autocommit=True)
+            # item_info=mydict.get(cur_id,"{}")
+            # out_dict=json.loads(item_info)
+            # mydict.close()
+            data_version=country_version_dict[cur_country]
+            ai_dir=os.path.join(km_data_dir,cur_country,data_version,domain)
+            cat_fpath=os.path.join(ai_dir,cur_cat+".txt")
+            deletions_fpath=os.path.join(km_data_dir,cur_country,"deleted.txt")
+            #if not os.path.exists(deletions_dir): os.makedirs(deletions_dir)
+            #log_something(cur_dict)
+            if os.path.exists(cat_fpath): 
+                log_something(environ,deletions_fpath,cur_dict)
+                remove_line(cur_id,cat_fpath)
+                out_dict["path"]=cat_fpath
+                out_dict["id"]=cur_id
+                out_dict["message"]="Sent successfully to removal - please refresh"
+                out_dict["success"]=True
+        #cur_email=qs_dict.get("email")
         
         # clicks_dir=os.path.join(root_dir,"clicks")
         # if not os.path.exists(clicks_dir): os.makedirs(clicks_dir)
         # clicks_log_path=os.path.join(clicks_dir,"clicks_log.txt")
         # log_something(environ,clicks_log_path,posted_data_dict)        
+        page_content=json.dumps(out_dict) 
+
+    elif script_name=="check_entry": #check website information
+        cur_dict={}
+        cur_dict["message"]="success"
+        cur_dict["success"]=True
+        cur_email=qs_dict.get("email")
+        # info_dict_path=os.path.join(km_data_dir,cur_country,"info_dict.sqlite") #now we get the info from each result
+        # mydict = SqliteDict(info_dict_path, autocommit=True)
+        # item_info=mydict.get(cur_id,"{}")
+        # out_dict=json.loads(item_info)
+        # mydict.close() 
+
         page_content=json.dumps(cur_dict) 
 
     elif script_name=="update": #update website information
