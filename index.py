@@ -41,6 +41,7 @@ admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com
 admin_password="adminKM"
 #admin_emails=["kmatters.b2web@gmail.com","b2web@kmatters.com","hmghaly@gmail.com"]
 
+structure_fname="data_dict_040122.json"
 
 country_version_dict={} #specifying where is the working version for the AI data for each language
 #country_version_dict["au"]="oct21"
@@ -49,11 +50,13 @@ country_version_dict={} #specifying where is the working version for the AI data
 country_version_dict["au"]="nov21"
 country_version_dict["nz"]="nov21"
 country_version_dict["my"]="nov21"
+country_version_dict["uk"]="dec21"
 
 country_name_dict={} #Getting the country name from the country code
 country_name_dict["au"]="Australia"
 country_name_dict["nz"]="New Zealand"
 country_name_dict["my"]="Malaysia"
+country_name_dict["uk"]="United Kingdom"
 
 error="No error"
 trace="No trace"
@@ -117,7 +120,7 @@ if not os.path.exists(business_dir): os.makedirs(business_dir)
 
 #classification structure - json file
 txt_dir="../txt"
-structure_fname="data_dict.json"
+#structure_fname="data_dict.json"
 structure_fpath=os.path.join(txt_dir,structure_fname)
 structure_content=read_file(structure_fpath)
 structure_dict=json.loads(structure_content) 
@@ -693,7 +696,9 @@ def app(environ, start_response):
             if not user_allowed: continue
             local_dict=json.loads(item)
             cur_url=local_dict.get("url","")
-            found_title=local_dict.get("title",cur_url)
+            raw_title=local_dict.get("raw_title",cur_url)
+            raw_description=local_dict.get("raw_description","")
+            found_title=local_dict.get("title",raw_title)
             cur_id=local_dict.get("id","")
             cur_title=cur_url
             cur_title=cur_title.replace("http://","").replace("https://","")
@@ -707,7 +712,7 @@ def app(environ, start_response):
             keywords_str="<b>Keywords:</b> "+" ".join(top_words_list)
             #keywords_str+="- <b>score</b>: %s"%cur_score #temporary
 
-            cur_description=local_dict.get("description","")
+            cur_description=local_dict.get("description",raw_description)
             if found_title: cur_description=found_title+" - "+ cur_description
             if len(top_words_list)>0 and len(cur_description.strip())<30: cur_description=keywords_str
 
